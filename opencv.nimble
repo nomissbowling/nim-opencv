@@ -1,11 +1,8 @@
-[Package]
-name          = "opencv"
-version       = "0.1.0"
+version       = "0.2.0"
 author        = "Dominik Picheta"
 description   = "OpenCV wrapper"
 license       = "MIT"
 
-skipDirs = "tests"
+skipDirs = @["tests"]
 
-[Deps]
-Requires: "nim >= 0.9.3"
+requires @["nim >= 0.9.3"]

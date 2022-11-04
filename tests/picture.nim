@@ -22,7 +22,7 @@ proc main() =
 
   # red, thickness=5 (dimensions set by img_box)
   let red = scalar(0,0,255,0)
-  rectangle(img_colr, point(0,0), point(img_box.width, img_box.height), red, 5)
+  rectangle(img_colr, point(0,0), point(img_box.width, img_box.height), red)
   showIt("Color Image Rectangle", img_colr)
 
   var img_laplace = cloneImage(img_gray)

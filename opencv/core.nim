@@ -43,13 +43,16 @@
 {.deadCodeElim: on.}
 when defined(windows):
   const
-    coredll* = "(lib|)opencv_core(|249|231)(|d).dll"
+    coredll = "(lib|)opencv_core(|341|345)(|d).dll"
+    imgprocdll = "(lib|)opencv_imgproc(|341|345)(|d).dll"
 elif defined(macosx):
   const
-    coredll* = "libopencv_core.dylib"
+    coredll = "libopencv_core.dylib"
+    imgprocdll = "libopencv_imgproc.dylib"
 else:
   const
-    coredll* = "libopencv_core.so"
+    coredll = "libopencv_core.so"
+    imgprocdll = "libopencv_imgproc.so"
 include types
 
 #from math import round
@@ -1398,24 +1401,24 @@ const
 
 proc line*(img: ImgPtr; pt1: TPoint; pt2: TPoint; color: TScalar;
            thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.cdecl,
-    importc: "cvLine", dynlib: coredll.}
+    importc: "cvLine", dynlib: imgprocdll.}
 # Draws a rectangle given two opposite corners of the rectangle (pt1 & pt2),
 #   if thickness<0 (e.g. thickness == CV_FILLED), the filled box is drawn
 
 proc rectangle*(img: ImgPtr; pt1: TPoint; pt2: TPoint; color: TScalar;
                 thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
-    cdecl, importc: "cvRectangle", dynlib: coredll.}
+    cdecl, importc: "cvRectangle", dynlib: imgprocdll.}
 # Draws a rectangle specified by a CvRect structure
 
 proc rectangleR*(img: ImgPtr; r: TRect; color: TScalar; thickness: cint = 1;
                  lineType: cint = 8; shift: cint = 0) {.cdecl,
-    importc: "cvRectangleR", dynlib: coredll.}
+    importc: "cvRectangleR", dynlib: imgprocdll.}
 # Draws a circle with specified center and radius.
 #   Thickness works in the same way as with cvRectangle
 
 proc circle*(img: ImgPtr; center: TPoint; radius: cint; color: TScalar;
              thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.cdecl,
-    importc: "cvCircle", dynlib: coredll.}
+    importc: "cvCircle", dynlib: imgprocdll.}
 # Draws ellipse outline, filled ellipse, elliptic arc or filled elliptic sector,
 #   depending on <thickness>, <start_angle> and <end_angle> parameters. The resultant figure
 #   is rotated by <angle>. All the angles are in degrees
@@ -1423,7 +1426,7 @@ proc circle*(img: ImgPtr; center: TPoint; radius: cint; color: TScalar;
 proc ellipse*(img: ImgPtr; center: TPoint; axes: TSize; angle: cdouble;
               startAngle: cdouble; endAngle: cdouble; color: TScalar;
               thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
-    cdecl, importc: "cvEllipse", dynlib: coredll.}
+    cdecl, importc: "cvEllipse", dynlib: imgprocdll.}
 proc ellipseBox*(img: ImgPtr; box: TBox2D; color: TScalar;
                  thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
     cdecl.} =
@@ -1437,18 +1440,18 @@ proc ellipseBox*(img: ImgPtr; box: TBox2D; color: TScalar;
 
 proc fillConvexPoly*(img: ImgPtr; pts: ptr TPoint; npts: cint; color: TScalar;
                      lineType: cint = 8; shift: cint = 0) {.cdecl,
-    importc: "cvFillConvexPoly", dynlib: coredll.}
+    importc: "cvFillConvexPoly", dynlib: imgprocdll.}
 # Fills an area bounded by one or more arbitrary polygons
 
 proc fillPoly*(img: ImgPtr; pts: ptr ptr TPoint; npts: ptr cint;
                contours: cint; color: TScalar; lineType: cint = 8;
-               shift: cint = 0) {.cdecl, importc: "cvFillPoly", dynlib: coredll.}
+               shift: cint = 0) {.cdecl, importc: "cvFillPoly", dynlib: imgprocdll.}
 # Draws one or more polygonal curves
 
 proc polyLine*(img: ImgPtr; pts: ptr ptr TPoint; npts: ptr cint;
                contours: cint; isClosed: cint; color: TScalar;
                thickness: cint = 1; lineType: cint = 8; shift: cint = 0) {.
-    cdecl, importc: "cvPolyLine", dynlib: coredll.}
+    cdecl, importc: "cvPolyLine", dynlib: imgprocdll.}
 const
   drawRect* = rectangle
   drawLine* = line
@@ -1461,7 +1464,7 @@ const
 #   (0<=x<img_size.width, 0<=y<img_size.height).
 
 proc clipLine*(imgSize: TSize; pt1: ptr TPoint; pt2: ptr TPoint): cint {.cdecl,
-    importc: "cvClipLine", dynlib: coredll.}
+    importc: "cvClipLine", dynlib: imgprocdll.}
 # Initializes line iterator. Initially, line_iterator->ptr will point
 #   to pt1 (or pt2, see left_to_right description) location in the image.
 #   Returns the number of pixels on the line between the ending points.
@@ -1469,7 +1472,7 @@ proc clipLine*(imgSize: TSize; pt1: ptr TPoint; pt2: ptr TPoint): cint {.cdecl,
 proc initLineIterator*(image: ImgPtr; pt1: TPoint; pt2: TPoint;
                        lineIterator: ptr TLineIterator; connectivity: cint = 8;
                        leftToRight: cint = 0): cint {.cdecl,
-    importc: "cvInitLineIterator", dynlib: coredll.}
+    importc: "cvInitLineIterator", dynlib: imgprocdll.}
 # Moves iterator to the next line point
 
 # basic font types
@@ -1513,7 +1516,7 @@ type
 proc initFont*(font: ptr TFont; fontFace: cint; hscale: cdouble;
                vscale: cdouble; shear: cdouble = 0; thickness: cint = 1;
                lineType: cint = 8) {.cdecl, importc: "cvInitFont",
-                                      dynlib: coredll.}
+                                      dynlib: imgprocdll.}
 proc font*(scale: cdouble; thickness: cint = 1): TFont {.cdecl.} =
   var font: TFont
   initFont(addr(font), FONT_HERSHEY_PLAIN, scale, scale, 0, thickness, AA)
@@ -1523,18 +1526,18 @@ proc font*(scale: cdouble; thickness: cint = 1): TFont {.cdecl.} =
 #   CvFont should be initialized with cvInitFont
 
 proc putText*(img: ImgPtr; text: cstring; org: TPoint; font: ptr TFont;
-              color: TScalar) {.cdecl, importc: "cvPutText", dynlib: coredll.}
+              color: TScalar) {.cdecl, importc: "cvPutText", dynlib: imgprocdll.}
 # Calculates bounding box of text stroke (useful for alignment)
 
 proc getTextSize*(textString: cstring; font: ptr TFont; textSize: ptr TSize;
                   baseline: ptr cint) {.cdecl, importc: "cvGetTextSize",
-                                        dynlib: coredll.}
+                                        dynlib: imgprocdll.}
 # Unpacks color value, if arrtype is CV_8UC?, <color> is treated as
 #   packed color value, otherwise the first channels (depending on arrtype)
 #   of destination scalar are set to the same value = <color>
 
 proc colorToScalar*(packedColor: cdouble; arrtype: cint): TScalar {.cdecl,
-    importc: "cvColorToScalar", dynlib: coredll.}
+    importc: "cvColorToScalar", dynlib: imgprocdll.}
 # Returns the polygon points which make up the given ellipse.  The ellipse is define by
 #   the box of size 'axes' rotated 'angle' around the 'center'.  A partial sweep
 #   of the ellipse arc can be done by spcifying arc_start and arc_end to be something
@@ -1544,13 +1547,13 @@ proc colorToScalar*(packedColor: cdouble; arrtype: cint): TScalar {.cdecl,
 
 proc ellipse2Poly*(center: TPoint; axes: TSize; angle: cint; arcStart: cint;
                    arcEnd: cint; pts: ptr TPoint; delta: cint): cint {.cdecl,
-    importc: "cvEllipse2Poly", dynlib: coredll.}
+    importc: "cvEllipse2Poly", dynlib: imgprocdll.}
 # Draws contour outlines or filled interiors on the image
 
 proc drawContours*(img: ImgPtr; contour: ptr TSeq; externalColor: TScalar;
                    holeColor: TScalar; maxLevel: cint; thickness: cint = 1;
                    lineType: cint = 8; offset: TPoint = point(0, 0)) {.cdecl,
-    importc: "cvDrawContours", dynlib: coredll.}
+    importc: "cvDrawContours", dynlib: imgprocdll.}
 # Does look-up transformation. Elements of the source array
 #   (that should be 8uC1 or 8sC1) are used as indexes in lutarr 256-element table
 

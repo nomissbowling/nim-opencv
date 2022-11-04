@@ -53,10 +53,10 @@ type
 #
 
 type
-  T32suf* {.pure, final.} = object
+  T32suf* {.pure, bycopy, final.} = object
     i*: cint
 
-  T64suf* {.pure, final.} = object
+  T64suf* {.pure, bycopy, final.} = object
     i*: int64
 
   TStatus* = cint
@@ -90,7 +90,7 @@ const
   IPL_BORDER_WRAP* = 3
 
 type
-  TIplImage* {.pure, final.} = object
+  TIplImage* {.pure, bycopy, final.} = object
     nSize*: cint              # sizeof(IplImage)
     id*: cint                 # version (=0)
     nChannels*: cint          # Most of OpenCV functions support 1,2,3 or 4 channels
@@ -122,16 +122,16 @@ type
                               #                               (not necessarily aligned) -
                               #                               needed for correct deallocation
 
-  TIplTileInfo* {.pure, final.} = object
+  TIplTileInfo* {.pure, bycopy, final.} = object
 
-  TIplROI* {.pure, final.} = object
+  TIplROI* {.pure, bycopy, final.} = object
     coi*: cint                # 0 - no COI (all channels are selected), 1 - 0th channel is selected ...
     xOffset*: cint
     yOffset*: cint
     width*: cint
     height*: cint
 
-  TIplConvKernel* {.pure, final.} = object
+  TIplConvKernel* {.pure, bycopy, final.} = object
     nCols*: cint
     nRows*: cint
     anchorX*: cint
@@ -139,7 +139,7 @@ type
     values*: ptr cint
     nShiftR*: cint
 
-  TIplConvKernelFP* {.pure, final.} = object
+  TIplConvKernelFP* {.pure, bycopy, final.} = object
     nCols*: cint
     nRows*: cint
     anchorX*: cint
@@ -275,10 +275,10 @@ const
   TYPE_NAME_MAT* = "opencv-matrix"
 
 type
-  TMatData* {.pure, final.} = object
+  TMatData* {.pure, bycopy, final.} = object
     thePtr*: ptr cuchar
 
-  TMat* {.pure, final.} = object
+  TMat* {.pure, bycopy, final.} = object
     theType*: cint
     step*: cint               # for internal use only
     refcount*: ptr cint
@@ -300,14 +300,14 @@ const
   MAX_DIM_HEAP* = 1024
 
 type
-  TMatNDdata* {.pure, final.} = object
+  TMatNDdata* {.pure, bycopy, final.} = object
     thePtr*: ptr cuchar
 
-  TMatNDDim* {.pure, final.} = object
+  TMatNDDim* {.pure, bycopy, final.} = object
     size*: cint
     step*: cint
 
-  TMatND* {.pure, final.} = object
+  TMatND* {.pure, bycopy, final.} = object
     theType*: cint
     dims*: cint
     refcount*: ptr cint
@@ -328,7 +328,7 @@ const
 type
   TSet* {.pure, final.} = object
 
-  TSparseMat* {.pure, final.} = object
+  TSparseMat* {.pure, bycopy, final.} = object
     theType*: cint
     dims*: cint
     refcount*: ptr cint
@@ -344,11 +344,11 @@ type
 #*************** iteration through a sparse array ****************
 
 type
-  TSparseNode* {.pure, final.} = object
+  TSparseNode* {.pure, bycopy, final.} = object
     hashval*: cuint
     next*: ptr TSparseNode
 
-  TSparseMatIterator* {.pure, final.} = object
+  TSparseMatIterator* {.pure, bycopy, final.} = object
     mat*: ptr TSparseMat
     node*: ptr TSparseNode
     curidx*: cint
@@ -379,7 +379,7 @@ const
   HIST_UNIFORM* = 1
 
 type
-  THistogram* {.pure, final.} = object
+  THistogram* {.pure, bycopy, final.} = object
     theType*: cint
     bins*: ptr TArr
     thresh*: array[0..2 - 1, array[0..MAX_DIM - 1, cfloat]] # For uniform histograms.
@@ -393,7 +393,7 @@ type
 #************************************** CvRect ****************************************
 
 type
-  TRect* {.pure, final.} = object
+  TRect* {.pure, bycopy, final.} = object
     x*: cint
     y*: cint
     width*: cint
@@ -428,7 +428,7 @@ const
   TERMCRIT_EPS* = 2
 
 type
-  TTermCriteria* {.pure, final.} = object
+  TTermCriteria* {.pure, bycopy, final.} = object
     theType*: cint            # may be combination of
                               #                     CV_TERMCRIT_ITER
                               #                     CV_TERMCRIT_EPS
@@ -447,7 +447,7 @@ proc termCriteria*(theType: cint; maxIter: cint; epsilon: cdouble): TTermCriteri
 #****************************** CvPoint and variants **********************************
 
 type
-  TPoint* {.pure, final.} = object
+  TPoint* {.pure, bycopy, final.} = object
     x*: cint
     y*: cint
 
@@ -459,7 +459,7 @@ proc point*(x: cint; y: cint): TPoint {.cdecl.} =
   return p
 
 type
-  TPoint2D32f* {.pure, final.} = object
+  TPoint2D32f* {.pure, bycopy, final.} = object
     x*: cfloat
     y*: cfloat
 
@@ -480,7 +480,7 @@ proc pointFrom32f*(point: TPoint2D32f): TPoint {.cdecl.} =
   return ipt
 
 type
-  TPoint3D32f* {.pure, final.} = object
+  TPoint3D32f* {.pure, bycopy, final.} = object
     x*: cfloat
     y*: cfloat
     z*: cfloat
@@ -494,7 +494,7 @@ proc point3D32f*(x: cdouble; y: cdouble; z: cdouble): TPoint3D32f {.cdecl.} =
   return p
 
 type
-  TPoint2D64f* {.pure, final.} = object
+  TPoint2D64f* {.pure, bycopy, final.} = object
     x*: cdouble
     y*: cdouble
 
@@ -506,7 +506,7 @@ proc point2D64f*(x: cdouble; y: cdouble): TPoint2D64f {.cdecl.} =
   return p
 
 type
-  TPoint3D64f* {.pure, final.} = object
+  TPoint3D64f* {.pure, bycopy, final.} = object
     x*: cdouble
     y*: cdouble
     z*: cdouble
@@ -522,7 +522,7 @@ proc point3D64f*(x: cdouble; y: cdouble; z: cdouble): TPoint3D64f {.cdecl.} =
 #******************************* CvSize's & CvBox *************************************
 
 type
-  TSize* {.pure, final.} = object
+  TSize* {.pure, bycopy, final.} = object
     width*: cint
     height*: cint
 
@@ -534,7 +534,7 @@ proc size*(width: cint; height: cint): TSize {.cdecl.} =
   return s
 
 type
-  TSize2D32f* {.pure, final.} = object
+  TSize2D32f* {.pure, bycopy, final.} = object
     width*: cfloat
     height*: cfloat
 
@@ -546,7 +546,7 @@ proc size2D32f*(width: cdouble; height: cdouble): TSize2D32f {.cdecl.} =
   return s
 
 type
-  TBox2D* {.pure, final.} = object
+  TBox2D* {.pure, bycopy, final.} = object
     center*: TPoint2D32f      # Center of the box.
     size*: TSize2D32f         # Box width and length.
     angle*: cfloat            # Angle between the horizontal axis
@@ -556,7 +556,7 @@ type
 # Line iterator state:
 
 type
-  TLineIterator* {.pure, final.} = object
+  TLineIterator* {.pure, bycopy, final.} = object
     thePtr*: ptr cuchar        # Pointer to the current point: \
     # Bresenham algorithm state:
     err*: cint
@@ -569,7 +569,7 @@ type
 #************************************ CvSlice *****************************************
 
 type
-  TSlice* {.pure, final.} = object
+  TSlice* {.pure, bycopy, final.} = object
     startIndex*: cint
     endIndex*: cint
 
@@ -588,7 +588,7 @@ template Whole_Seq*: untyped = slice(0, WHOLE_SEQ_END_INDEX)
 #************************************ CvScalar ****************************************
 
 type
-  TScalar* {.pure, final.} = object
+  TScalar* {.pure, bycopy, final.} = object
     val*: array[0..4 - 1, cdouble]
 
 
@@ -623,7 +623,7 @@ proc scalarAll*(val0123: cdouble): TScalar {.cdecl.} =
 #******************************* Memory storage ***************************************
 
 type
-  TMemBlock* {.pure, final.} = object
+  TMemBlock* {.pure, bycopy, final.} = object
     prev*: ptr TMemBlock
     next*: ptr TMemBlock
 
@@ -632,7 +632,7 @@ const
   STORAGE_MAGIC_VAL* = 0x42890000
 
 type
-  TMemStorage* {.pure, final.} = object
+  TMemStorage* {.pure, bycopy, final.} = object
     signature*: cint
     bottom*: ptr TMemBlock    # First allocated block.
     top*: ptr TMemBlock       # Current memory block - top of the stack.
@@ -640,7 +640,7 @@ type
     blockSize*: cint         # Block size.
     freeSpace*: cint         # Remaining free space in current block.
 
-  TMemStoragePos* {.pure, final.} = object
+  TMemStoragePos* {.pure, bycopy, final.} = object
     top*: ptr TMemBlock
     freeSpace*: cint
 
@@ -648,7 +648,7 @@ type
 #********************************** Sequence ******************************************
 
 type
-  TSeqBlock* {.pure, final.} = object
+  TSeqBlock* {.pure, bycopy, final.} = object
     prev*: ptr TSeqBlock      # Previous sequence block.
     next*: ptr TSeqBlock      # Next sequence block.
     startIndex*: cint        # Index of the first element in the block +
@@ -663,9 +663,12 @@ type
 #
 
 type
-  TSeq* {.pure, final.} = object
+  TSeq* {.pure, bycopy, final.} = object
     flags*: cint              # Miscellaneous flags.
     headerSize*: cint        # Size of sequence header.
+    hPrev*: ptr TSeq         # 2nd next sequence.
+    hNext*: ptr TSeq         # 2nd next sequence.
+    vPrev*: ptr TSeq         # 2nd next sequence.
     vNext*: ptr TSeq         # 2nd next sequence.
     total*: cint              # Total number of elements.
     elemSize*: cint          # Size of sequence element in bytes.
@@ -690,13 +693,16 @@ const
 #
 
 type
-  TSetElem* {.pure, final.} = object
+  TSetElem* {.pure, bycopy, final.} = object
     flags*: cint
     nextFree*: ptr TSetElem
 
-  TCvSet* {.pure, final.} = object
+  TCvSet* {.pure, bycopy, final.} = object
     flags*: cint              # Miscellaneous flags.
     headerSize*: cint        # Size of sequence header.
+    hPrev*: ptr TSeq         # 2nd next sequence.
+    hNext*: ptr TSeq         # 2nd next sequence.
+    vPrev*: ptr TSeq         # 2nd next sequence.
     vNext*: ptr TSeq         # 2nd next sequence.
     total*: cint              # Total number of elements.
     elemSize*: cint          # Size of sequence element in bytes.
@@ -737,17 +743,17 @@ const
 #
 
 type
-  TGraphEdge* {.pure, final.} = object
+  TGraphEdge* {.pure, bycopy, final.} = object
     flags*: cint
     weight*: cfloat
     next*: array[0..2 - 1, ptr TGraphEdge]
     vtx*: array[0..2 - 1, ptr TGraphVtx]
 
-  TGraphVtx* {.pure, final.} = object
+  TGraphVtx* {.pure, bycopy, final.} = object
     flags*: cint
     first*: ptr TGraphEdge
 
-  TGraphVtx2D* {.pure, final.} = object
+  TGraphVtx2D* {.pure, bycopy, final.} = object
     flags*: cint
     first*: ptr TGraphEdge
     thePtr*: ptr TPoint2D32f
@@ -759,9 +765,12 @@ type
 #
 
 type
-  TGraph* {.pure, final.} = object
+  TGraph* {.pure, bycopy, final.} = object
     flags*: cint              # Miscellaneous flags.
     headerSize*: cint        # Size of sequence header.
+    hPrev*: ptr TSeq         # 2nd next sequence.
+    hNext*: ptr TSeq         # 2nd next sequence.
+    vPrev*: ptr TSeq         # 2nd next sequence.
     vNext*: ptr TSeq         # 2nd next sequence.
     total*: cint              # Total number of elements.
     elemSize*: cint          # Size of sequence element in bytes.
@@ -782,9 +791,12 @@ const
 #********************************** Chain/Countour ************************************
 
 type
-  TChain* {.pure, final.} = object
+  TChain* {.pure, bycopy, final.} = object
     flags*: cint              # Miscellaneous flags.
     headerSize*: cint        # Size of sequence header.
+    hPrev*: ptr TSeq         # 2nd next sequence.
+    hNext*: ptr TSeq         # 2nd next sequence.
+    vPrev*: ptr TSeq         # 2nd next sequence.
     vNext*: ptr TSeq         # 2nd next sequence.
     total*: cint              # Total number of elements.
     elemSize*: cint          # Size of sequence element in bytes.
@@ -796,9 +808,12 @@ type
     first*: ptr TSeqBlock     # Pointer to the first sequence block.
     origin*: TPoint
 
-  TContour* {.pure, final.} = object
+  TContour* {.pure, bycopy, final.} = object
     flags*: cint              # Miscellaneous flags.
     headerSize*: cint        # Size of sequence header.
+    hPrev*: ptr TSeq         # 2nd next sequence.
+    hNext*: ptr TSeq         # 2nd next sequence.
+    vPrev*: ptr TSeq         # 2nd next sequence.
     vNext*: ptr TSeq         # 2nd next sequence.
     total*: cint              # Total number of elements.
     elemSize*: cint          # Size of sequence element in bytes.
@@ -908,7 +923,7 @@ const
 #**************************************************************************************
 
 type
-  TSeqWriter* {.pure, final.} = object
+  TSeqWriter* {.pure, bycopy, final.} = object
     headerSize*: cint
     seq*: ptr TSeq            # the sequence written
     theBlock*: ptr TSeqBlock     # current block
@@ -916,7 +931,7 @@ type
     blockMin*: ptr Schar     # pointer to the beginning of block
     blockMax*: ptr Schar     # pointer to the end of block
 
-  TSeqReader* {.pure, final.} = object
+  TSeqReader* {.pure, bycopy, final.} = object
     headerSize*: cint
     seq*: ptr TSeq            # sequence, beign read
     theBlock*: ptr TSeqBlock     # current block
@@ -953,7 +968,7 @@ const
 # List of attributes:
 
 type
-  TAttrList* {.pure, final.} = object
+  TAttrList* {.pure, bycopy, final.} = object
     attr*: cstringArray       # NULL-terminated array of (attribute_name,attribute_value) pairs.
     next*: ptr TAttrList      # Pointer to next chunk of the attributes list.
 
@@ -1027,7 +1042,7 @@ const
   NODE_SEQ_SIMPLE* = 256
 
 type
-  TString* {.pure, final.} = object
+  TString* {.pure, bycopy, final.} = object
     len*: cint
     thePtr*: cstring
 
@@ -1036,7 +1051,7 @@ type
 #   are stored in the hash to speed up the lookup operations:
 
 type
-  TStringHashNode* {.pure, final.} = object
+  TStringHashNode* {.pure, bycopy, final.} = object
     hashval*: cuint
     str*: TString
     next*: ptr TStringHashNode
@@ -1044,7 +1059,7 @@ type
   TGenericHash {.pure, final.} = object
 
   TFileNodeHash* = TGenericHash
-  TFileNodeData* {.pure, final.} = object
+  TFileNodeData* {.pure, bycopy, final.} = object
     f*: cdouble               # scalar floating-point number
     i*: cint                  # scalar integer number
     str*: TString             # text string
@@ -1057,12 +1072,12 @@ type
 # Basic element of the file storage - scalar or collection:
 
 type
-  TFileNode* {.pure, final.} = object
+  TFileNode* {.pure, bycopy, final.} = object
     tag*: cint
     info*: ptr TTypeInfo      # type information
                               #            (only for user-defined object, for others it is 0)
     data*: TFileNodeData
-  TFileStorage* {.pure, final.} = object
+  TFileStorage* {.pure, bycopy, final.} = object
   TIsInstanceFunc* = proc (structPtr: pointer): cint {.cdecl.}
   TReleaseFunc* = proc (structDblptr: ptr pointer) {.cdecl.}
   TReadFunc* = proc (storage: ptr TFileStorage; node: ptr TFileNode): pointer {.
@@ -1070,7 +1085,7 @@ type
   TWriteFunc* = proc (storage: ptr TFileStorage; name: cstring;
                       structPtr: pointer; attributes: TAttrList) {.cdecl.}
   TCloneFunc* = proc (structPtr: pointer): pointer {.cdecl.}
-  TCvTypeInfo* {.pure, final.} = object
+  TCvTypeInfo* {.pure, bycopy, final.} = object
     flags*: cint
     headerSize*: cint
     prev*: ptr TTypeInfo
@@ -1086,14 +1101,14 @@ type
 #*** System data types *****
 
 type
-  TPluginFuncInfo* {.pure, final.} = object
+  TPluginFuncInfo* {.pure, bycopy, final.} = object
     funcAddr*: ptr pointer
     defaultFuncAddr*: pointer
     funcNames*: cstring
     searchModules*: cint
     loadedFrom*: cint
 
-  TModuleInfo* {.pure, final.} = object
+  TModuleInfo* {.pure, bycopy, final.} = object
     next*: ptr TModuleInfo
     name*: cstring
     version*: cstring

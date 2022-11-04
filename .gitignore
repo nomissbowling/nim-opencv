@@ -1,2 +1,9 @@
 *.o
 *.c
+nimcache/
+camera
+picture
+mat
+tracking
+video
+nimcache/

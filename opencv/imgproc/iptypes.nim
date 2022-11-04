@@ -45,13 +45,13 @@ import opencv/core
 # Connected component structure
 
 type
-  TConnectedComp* {.pure, final.} = object
+  TConnectedComp* {.pure, bycopy, final.} = object
     area*: cdouble            # area of the connected component
     value*: TScalar            # average color of the connected component
     rect*: TRect               # ROI of the component
     contour*: pointer         # optional component boundary
                               #                      (the contour might have child contours corresponding to the holes)
-  TContourScanner* {.pure, final.} = object
+  TContourScanner* {.pure, bycopy, final.} = object
 
 # Image smooth methods
 
@@ -306,7 +306,7 @@ const
 # Spatial and central moments
 
 type
-  TMoments* {.pure, final.} = object
+  TMoments* {.pure, bycopy, final.} = object
     m00*: cdouble
     m10*: cdouble
     m01*: cdouble
@@ -330,7 +330,7 @@ type
 # Hu invariants
 
 type
-  THuMoments* {.pure, final.} = object
+  THuMoments* {.pure, bycopy, final.} = object
     hu1*: cdouble
     hu2*: cdouble
     hu3*: cdouble
@@ -384,7 +384,7 @@ type
 # Freeman chain reader state
 
 type
-  TChainPtReader* {.pure, final.} = object
+  TChainPtReader* {.pure, bycopy, final.} = object
     code*: char               #CV_SEQ_READER_FIELDS()
     pt*: TPoint
     deltas*: array[0..2 - 1, array[0..8 - 1, Schar]]
@@ -403,18 +403,18 @@ const
   SUBDIV2D_VIRTUAL_POINT_FLAG* = (1 shl 30)
 
 type
-  TQuadEdge2D* {.pure, final.} = object
+  TQuadEdge2D* {.pure, bycopy, final.} = object
     flags*: cint
     pt*: array[0..4 - 1, ptr TSubdiv2DPoint]
     next*: array[0..4 - 1, TSubdiv2DEdge]
 
-  TSubdiv2DPoint* {.pure, final.} = object
+  TSubdiv2DPoint* {.pure, bycopy, final.} = object
     flags*: cint
     first*: TSubdiv2DEdge
     pt*: TPoint2D32f
     id*: cint
 
-  TSubdiv2D* {.pure, final.} = object
+  TSubdiv2D* {.pure, bycopy, final.} = object
     quad_edges*: cint         #CV_GRAPH_FIELDS()
     is_geometry_valid*: cint
     recent_edge*: TSubdiv2DEdge
@@ -456,7 +456,7 @@ const
 # Convexity defect
 
 type
-  TConvexityDefect* {.pure, final.} = object
+  TConvexityDefect* {.pure, bycopy, final.} = object
     start*: ptr TPoint         # point of the contour where the defect begins
     theEnd*: ptr TPoint        # point of the contour where the defect ends
     depth_point*: ptr TPoint   # the farthest from the convex hull point within the defect

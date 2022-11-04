@@ -43,13 +43,13 @@
 {.deadCodeElim: on.}
 when defined(windows):
   const
-    imgprocdll* = "(lib|)opencv_imgproc(249|231|)(d|).dll"
+    imgprocdll = "(lib|)opencv_imgproc(|341|345)(|d).dll"
 elif defined(macosx):
   const
-    imgprocdll* = "libopencv_imgproc.dylib"
+    imgprocdll = "libopencv_imgproc.dylib"
 else:
   const
-    imgprocdll* = "libopencv_imgproc.so"
+    imgprocdll = "libopencv_imgproc.so"
 include opencv/imgproc/iptypes
 
 

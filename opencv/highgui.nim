@@ -42,13 +42,19 @@
 {.deadCodeElim: on.}
 when defined(windows):
   const
-    highguidll* = "(lib|)opencv_highgui(249|231|)(d|).dll"
+    highguidll = "(lib|)opencv_highgui(|341|345)(d|).dll"
+    videoiodll = "(lib|)opencv_videoio(|341|345)(|d).dll"
+    imgcodecsdll = "(lib|)opencv_imgcodecs(|341|345)(|d).dll"
 elif defined(macosx):
   const
-    highguidll* = "libopencv_highgui.dylib"
+    highguidll = "libopencv_highgui.dylib"
+    videoiodll = "libopencv_videoio.dylib"
+    imgcodecsdll = "libopencv_imgcodecs.dylib"
 else:
   const
-    highguidll* = "libopencv_highgui.so"
+    highguidll = "libopencv_highgui.so"
+    videoiodll = "libopencv_videoio.so"
+    imgcodecsdll = "libopencv_imgcodecs.so"
 
 import core
 
@@ -190,9 +196,9 @@ const                       # 8bit, color or not
 #  unless CV_LOAD_IMAGE_ANYDEPTH is specified images are converted to 8bit
 #
 proc loadImage*(filename: cstring; iscolor: cint): ptr TIplImage{.cdecl,
-    importc: "cvLoadImage", dynlib: highguidll.}
+    importc: "cvLoadImage", dynlib: imgcodecsdll.}
 #proc loadImageM*(filename: cstring; iscolor: cint): MatPtr{.cdecl,
-#    importc: "cvLoadImageM", dynlib: highguidll.}
+#    importc: "cvLoadImageM", dynlib: imgcodecsdll.}
 const
   IMWRITE_JPEG_QUALITY* = 1
   IMWRITE_PNG_COMPRESSION* = 16
@@ -241,7 +247,7 @@ proc updateWindow*(windowName: cstring){.cdecl, importc: "cvUpdateWindow",
 
 # start capturing frames from video file
 proc createFileCapture*(filename: cstring): ptr TCapture{.
-    importc: "cvCreateFileCapture", dynlib: highguidll.}
+    importc: "cvCreateFileCapture", dynlib: videoiodll.}
 const
   CAP_ANY* = 0           # autodetect
   CAP_MIL* = 100         # MIL proprietary drivers
@@ -391,34 +397,34 @@ const # modes of the controlling registers (can be: auto, manual, auto single pu
 
 # start capturing frames from camera: index = camera_index + domain_offset (CV_CAP_*)
 proc createCameraCapture*(index: cint): ptr TCapture{.
-    importc: "cvCreateCameraCapture", dynlib: highguidll.}
+    importc: "cvCreateCameraCapture", dynlib: videoiodll.}
 # grab a frame, return 1 on success, 0 on fail.
 #  this function is thought to be fast
 proc grabFrame*(capture: ptr TCapture): cint{.importc: "cvGrabFrame",
-    dynlib: highguidll.}
+    dynlib: videoiodll.}
 # get the frame grabbed with cvGrabFrame(..)
 #  This function may apply some frame processing like
 #  frame decompression, flipping etc.
 #  !!!DO NOT RELEASE or MODIFY the retrieved frame!!!
 proc retrieveFrame*(capture: ptr TCapture; streamIdx: cint): ptr TIplImage{.
-    importc: "cvRetrieveFrame", dynlib: highguidll.}
+    importc: "cvRetrieveFrame", dynlib: videoiodll.}
 # Just a combination of cvGrabFrame and cvRetrieveFrame
 #   !!!DO NOT RELEASE or MODIFY the retrieved frame!!!
 proc queryFrame*(capture: ptr TCapture): ptr TIplImage{.
-    importc: "cvQueryFrame", dynlib: highguidll.}
+    importc: "cvQueryFrame", dynlib: videoiodll.}
 # stop capturing/reading and free resources
 proc releaseCapture*(capture: ptr ptr TCapture){.
-    importc: "cvReleaseCapture", dynlib: highguidll.}
+    importc: "cvReleaseCapture", dynlib: videoiodll.}
 
 # retrieve or set capture properties
 proc getCaptureProperty*(capture: ptr TCapture; propertyId: cint): cdouble{.
-    importc: "cvGetCaptureProperty", dynlib: highguidll.}
+    importc: "cvGetCaptureProperty", dynlib: videoiodll.}
 proc setCaptureProperty*(capture: ptr TCapture; propertyId: cint;
                            value: cdouble): cint{.
-    importc: "cvSetCaptureProperty", dynlib: highguidll.}
+    importc: "cvSetCaptureProperty", dynlib: videoiodll.}
 # Return the type of the capturer (eg, CV_CAP_V4W, CV_CAP_UNICAP), which is unknown if created with CV_CAP_ANY
 proc getCaptureDomain*(capture: ptr TCapture): cint{.
-    importc: "cvGetCaptureDomain", dynlib: highguidll.}
+    importc: "cvGetCaptureDomain", dynlib: videoiodll.}
 
 proc fOURCC*(c1, c2, c3, c4: char): cint =
   return cint((ord(c1).cint and 255) + ((ord(c2).cint and 255) shl 8) +
@@ -432,14 +438,14 @@ const
 # initialize video file writer
 proc createVideoWriter*(filename: cstring; fourcc: cint; fps: cdouble;
                           frameSize: TSize; isColor: cint = 1): ptr TVideoWriter{.
-    importc: "cvCreateVideoWriter", dynlib: highguidll.}
+    importc: "cvCreateVideoWriter", dynlib: videoiodll.}
 
 # write frame to video file
 proc writeFrame*(writer: ptr TVideoWriter; image: ptr TIplImage): cint{.
-    importc: "cvWriteFrame", dynlib: highguidll.}
+    importc: "cvWriteFrame", dynlib: videoiodll.}
 # close video file writer
 proc releaseVideoWriter*(writer: ptr ptr TVideoWriter){.
-    importc: "cvReleaseVideoWriter", dynlib: highguidll.}
+    importc: "cvReleaseVideoWriter", dynlib: videoiodll.}
 #***************************************************************************************\
 #                              Obsolete functions/synonyms                               *
 #\***************************************************************************************
