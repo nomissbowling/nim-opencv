@@ -22,7 +22,10 @@ when not defined(nocamera):
     # cap_src = "udp://127.0.0.1:11111" # needs ffmpeg OpenCV H.264
 
 proc newTIplImage*(m: Mat): ptr TIplImage =
-  result = createImage(size(m.cols.cint, m.rows.cint), 8, 3) # fixed depth nCh
+  let
+    d = if m.depth > 0: m.depth else: 8 # sometimes camera returns 0
+    c = if m.channels > 0: m.channels else: 3
+  result = createImage(size(m.cols.cint, m.rows.cint), d, c)
   result.imageData = cast[cstring](m.data) # expect copy
 
 proc imShow(img: ptr TArr, ttl: string, width: cint=640, height: cint=480,
@@ -65,12 +68,15 @@ proc main()=
   when not defined(nocamera):
     var cap = newVideoCapture(cap_src)
     if not cap.isOpened: quit(fmt"cannot open Capture src: {cap_src}")
-    # echo fmt"set width: {cap.set(CAP_PROP_FRAME_WIDTH, 640)}"
-    # echo fmt"set height: {cap.set(CAP_PROP_FRAME_HEIGHT, 480)}"
-    # echo fmt"set FPS: {cap.set(CAP_PROP_FPS, 15)}"
-    # echo fmt"get width: {cap.get(CAP_PROP_FRAME_WIDTH)}"
-    # echo fmt"get height: {cap.get(CAP_PROP_FRAME_HEIGHT)}"
-    # echo fmt"get FPS: {cap.get(CAP_PROP_FPS)}"
+    echo fmt"get width: {cap.get(CAP_PROP_FRAME_WIDTH)}"
+    echo fmt"get height: {cap.get(CAP_PROP_FRAME_HEIGHT)}"
+    echo fmt"get FPS: {cap.get(CAP_PROP_FPS)}"
+    echo fmt"set width: {cap.set(CAP_PROP_FRAME_WIDTH, 640)}"
+    echo fmt"set height: {cap.set(CAP_PROP_FRAME_HEIGHT, 480)}"
+    echo fmt"set FPS: {cap.set(CAP_PROP_FPS, 15)}"
+    echo fmt"get width: {cap.get(CAP_PROP_FRAME_WIDTH)}"
+    echo fmt"get height: {cap.get(CAP_PROP_FRAME_HEIGHT)}"
+    echo fmt"get FPS: {cap.get(CAP_PROP_FPS)}"
 
   while true:
     let

@@ -36,6 +36,8 @@ iterator pairs*[T](v: Vector[T]): tuple[key: int, val: T] =
 converter toMat*(img: ImgPtr):Mat {.importcpp:"cv::cvarrToMat(#)", header: cv2hdr.}
 converter toImg*(m: Mat):ImgPtr {.importcpp:"(void*)(new IplImage(#))", header: cv2hdr.}
 proc empty*(m: Mat):bool {.importcpp, header: cv2hdr.}
+proc depth*(m: Mat):cint {.importcpp, header: cv2hdr.}
+proc channels*(m: Mat):cint {.importcpp, header: cv2hdr.}
 proc newRect*[T](x, y, width, height: T): Rect[T] {.importcpp:"cv::Rect(@)".}
 proc total*(m: Mat): int {.importcpp:"#.total()".}
 

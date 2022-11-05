@@ -1,8 +1,8 @@
-version       = "0.2.0"
+version       = "0.3.0"
 author        = "Dominik Picheta"
 description   = "OpenCV wrapper"
 license       = "MIT"
 
 skipDirs = @["tests"]
 
-requires @["nim >= 0.9.3"]
+requires @["nim >= 1.0.0"]
