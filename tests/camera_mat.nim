@@ -29,7 +29,7 @@ proc newTIplImage*(m: Mat): ptr TIplImage =
   result.imageData = cast[cstring](m.data) # expect copy
 
 proc imShow(img: ptr TArr, ttl: string, width: cint=640, height: cint=480,
-  bgc: TScalar=scalar(192, 192, 192, 0))=
+  bgc: TScalar=scalar(192, 192, 192, 0)): ptr TArr {.discardable.} =
   var w, h: cint
   if img.width < img.height:
     w = width
@@ -47,6 +47,7 @@ proc imShow(img: ptr TArr, ttl: string, width: cint=640, height: cint=480,
   tmp.copy(im)
   im.resetImageROI
   showImage(ttl, im)
+  result = im # imageData is not copied ?
 
 proc main()=
   for wn in @["Src", "Gray", "Diff", "Dst",
@@ -77,6 +78,16 @@ proc main()=
     echo fmt"get width: {cap.get(CAP_PROP_FRAME_WIDTH)}"
     echo fmt"get height: {cap.get(CAP_PROP_FRAME_HEIGHT)}"
     echo fmt"get FPS: {cap.get(CAP_PROP_FPS)}"
+
+  let
+    fcc: cint = video.fourcc('m', 'p', '4', 'v')
+    fps: cdouble = 15.0
+    w: cint = 640
+    h: cint = 480
+    col: bool = true
+  var
+    wr = newVideoWriter(fmt"{test_path}/sample_out.mp4", fcc, fps, w, h, col)
+    cnt = 0
 
   while true:
     let
@@ -119,13 +130,20 @@ proc main()=
     img_frm.imShow("Src")
     img_gray.imShow("Gray")
     img_dif.imShow("Diff")
-    img_dst.imShow("Dst")
+    img_tmp = img_dst.imShow("Dst")
+
+    let mat_tmp: Mat = newMat(img_tmp.width, img_tmp.height, CV_8UC3,
+      cast[ptr uint8](img_tmp.imageData[0].addr)) # imageData is not copied ?
+    wr.write(mat_tmp)
+    cnt += 1
 
     let k = highgui.waitKey(1.cint) and 0xff # should use mat.waitKey
     if k == 0x1b or k == 'q'.ord: break
 
+  wr.release
   when not defined(nocamera):
     cap.release
   destroyAllWindows()
+  echo fmt"frames: {cnt}"
 
 main()
