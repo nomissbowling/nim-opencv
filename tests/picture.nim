@@ -1,3 +1,5 @@
+# TODO: It works on '>= opencv3' but uses old TIplImage, should rewrite it.
+
 import opencv/core, opencv/highgui, opencv/imgproc
 import os
 

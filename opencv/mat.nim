@@ -1,4 +1,5 @@
-{.passL:"-lopencv_core".}
+# compile with --passC:-Iinclude --passL:libopencv_core
+#{.passL:"-lopencv_core".}
 const
     cv2hdr = "<opencv2/opencv.hpp>"
 
@@ -19,7 +20,7 @@ type
         width* {.importc.}: T
         height* {.importc.}: T
 
-type Vector* {.importcpp: "std::vector", header: "<vector>".}[T] = object 
+type Vector* {.importcpp: "std::vector", header: "<vector>".}[T] = object
 proc `[]=`*[T](this: var Vector[T]; key: int; val: T) {.
   importcpp: "#[#] = #", header: "<vector>".}
 proc `[]`*[T](this: Vector[T]|var Vector[T]; key: int): T {.importcpp: "#[#]", header: "<vector>".}
@@ -34,6 +35,7 @@ iterator pairs*[T](v: Vector[T]): tuple[key: int, val: T] =
 
 converter toMat*(img: ImgPtr):Mat {.importcpp:"cv::cvarrToMat(#)", header: cv2hdr.}
 converter toImg*(m: Mat):ImgPtr {.importcpp:"(void*)(new IplImage(#))", header: cv2hdr.}
+proc empty*(m: Mat):bool {.importcpp, header: cv2hdr.}
 proc newRect*[T](x, y, width, height: T): Rect[T] {.importcpp:"cv::Rect(@)".}
 proc total*(m: Mat): int {.importcpp:"#.total()".}
 
@@ -43,12 +45,12 @@ converter toRect*[T](r: Rect[T]): Rect[float] = newRect(r.x.float, r.y.float, r.
 
 proc imshow*(title:cstring, m: Mat) {.importcpp:"cv::imshow(std::string(#), #)".}
 proc waitKey*(delay: cint = 0): int {.importcpp:"cv::waitKey(#)", header:cv2hdr, discardable.}
-proc selectROI*(title:cstring, m:Mat, showCrosshair = true, 
+proc selectROI*(title:cstring, m:Mat, showCrosshair = true,
     fromCenter = false): Rect[float] {.importcpp:"cv::selectROI(std::string(#), @)", header: cv2hdr.}
-proc selectROIs*(title:cstring, m:Mat, boxs:Vector[Rect[cint]], showCrosshair = true, 
+proc selectROIs*(title:cstring, m:Mat, boxs:Vector[Rect[cint]], showCrosshair = true,
     fromCenter = false) {.importcpp:"cv::selectROIs(std::string(#), @)", header: cv2hdr.}
 proc imwrite*(fn:cstring, m: Mat):bool {.importcpp:"cv::imwrite(std::string(#), #)",
         header: cv2hdr.}
 # C++: Mat imread(const string& filename, int flags=1 )
-proc imread*(fn:cstring, flats: int = 11): Mat {.importcpp:"cv::imread(std::string(#), #)", 
+proc imread*(fn:cstring, flats: int = 11): Mat {.importcpp:"cv::imread(std::string(#), #)",
         header: cv2hdr.}

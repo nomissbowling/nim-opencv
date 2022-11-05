@@ -1,3 +1,5 @@
+# TODO: It does *NOT* work legacy API on '>= opencv3', see also camera_mat.nim
+
 import times, strutils, os
 
 import opencv/imgproc, opencv/highgui, opencv/core
