@@ -1,5 +1,5 @@
-# compile with --passC:-Iinclude --passL:libopencv_core
-#{.passL:"-lopencv_core".}
+# compile with --passC:-I<include_path> --passL:>libopencv_XXX.a>
+#{.passL:"-lopencv_core".} # not embed
 const
     cv2hdr = "<opencv2/opencv.hpp>"
 

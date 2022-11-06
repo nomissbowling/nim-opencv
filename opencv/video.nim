@@ -1,5 +1,5 @@
-# compile with --passC:-Iinclude --passL:libopencv_videoio --passL:libopencv_highgui --passL:libopencv_imgcodecs
-#{.passL:"-lopencv_videoio -lopencv_highgui -lopencv_imgcodecs".}
+# compile with --passC:-I<include_path> --passL:>libopencv_XXX.a>
+#{.passL:"-lopencv_videoio -lopencv_highgui -lopencv_imgcodecs".} # not embed
 const
     cv2hdr = "<opencv2/opencv.hpp>"
 

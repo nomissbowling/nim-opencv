@@ -1,4 +1,6 @@
 # TODO: It works on '>= opencv3' but uses old TIplImage, should rewrite it.
+# It does *NOT* work on '>= opencv4', to fix this problem remove C legacy API.
+# See also camera_mat.nim
 
 import opencv/core, opencv/highgui, opencv/imgproc
 import os

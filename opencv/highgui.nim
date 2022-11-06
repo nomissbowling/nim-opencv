@@ -42,9 +42,9 @@
 {.deadCodeElim: on.}
 when defined(windows):
   const
-    highguidll = "(lib|)opencv_highgui(|341|345)(d|).dll"
-    videoiodll = "(lib|)opencv_videoio(|341|345)(|d).dll"
-    imgcodecsdll = "(lib|)opencv_imgcodecs(|341|345)(|d).dll"
+    highguidll = "(lib|)opencv_(world|highgui)(|341|345|3412|452)(d|).dll"
+    videoiodll = "(lib|)opencv_(world|videoio)(|341|345|3412|452)(|d).dll"
+    imgcodecsdll = "(lib|)opencv_(world|imgcodecs)(|341|345|3412|452)(|d).dll"
 elif defined(macosx):
   const
     highguidll = "libopencv_highgui.dylib"
