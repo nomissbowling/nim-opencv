@@ -4,6 +4,16 @@
 # compile with -d:nocamera when no camera
 #
 # TODO: It uses Mat for cv::VideoCapture, but uses TIplImage yet, should rewrite all to Mat.
+# TODO: It works good on OpenCV 3.4.12 but *NOT* works on OpenCV 4.5.2
+#  Because OpenCV 3 supports both C and C++ API
+#  but OpenCV 4 does not support C legacy API anymore. (cvLoadImage etc)
+#  So should use only Mat and remove all TIplImage interfaces from:
+#   core.nim : coredll* = "(lib|)opencv_core(|249|231)(|d).dll"
+#   core.nim : imgprocdll* = "(lib|)opencv_core(|249|231)(|d).dll"
+#   highgui.nim : highguidll* = "(lib|)opencv_highgui(249|231|)(d|).dll"
+#   highgui.nim : videoiodll* = "(lib|)opencv_videoio(249|231|)(d|).dll"
+#   highgui.nim : imgcodecsdll* = "(lib|)opencv_imgcodecs(249|231|)(d|).dll"
+#   imgproc.nim : imgprocdll = "(lib|)opencv_imgproc(|341|345)(|d).dll"
 
 import os
 import strformat, strutils
