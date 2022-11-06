@@ -33,7 +33,7 @@ iterator pairs*[T](v: Vector[T]): tuple[key: int, val: T] =
     for i in 0..<v.len():
         yield (i, v[i])
 
-proc newMat*(w, h, typ: cint, dat: ptr uint8): Mat {.importcpp:"cv::Mat(cv::Size(#, #), #, #)", header: cv2hdr.}
+proc newMat*(w, h, typ: cint, dat: cstring): Mat {.importcpp:"cv::Mat(cv::Size(#, #), #, #)", header: cv2hdr.}
 converter toMat*(img: ImgPtr):Mat {.importcpp:"cv::cvarrToMat(#)", header: cv2hdr.}
 converter toImg*(m: Mat):ImgPtr {.importcpp:"(void*)(new IplImage(#))", header: cv2hdr.}
 proc empty*(m: Mat):bool {.importcpp, header: cv2hdr.}

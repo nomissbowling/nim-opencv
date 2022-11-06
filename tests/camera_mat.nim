@@ -14,11 +14,13 @@ const
   test_path = currentSourcePath.splitFile.dir
   test_qr = fmt"{test_path}/qr_nim.png"
   test_qr_box = fmt"{test_path}/qr_box_template.png"
+  test_video_out = fmt"{test_path}/res/sample_video_out.mp4"
+  test_video_in = fmt"{test_path}/res/sample_color_grad.m4v" # "_mp4_h264.avi"
 
 when not defined(nocamera):
   const
     cap_src = 0 # camera id
-    # cap_src = fmt"{test_path}/sample_mp4_h264.avi" # file resource
+    # cap_src = test_video_in # file resource
     # cap_src = "udp://127.0.0.1:11111" # needs ffmpeg OpenCV H.264
 
 proc newTIplImage*(m: Mat): ptr TIplImage =
@@ -86,7 +88,7 @@ proc main()=
     h: cint = 480
     col: bool = true
   var
-    wr = newVideoWriter(fmt"{test_path}/sample_out.mp4", fcc, fps, w, h, col)
+    wr = newVideoWriter(test_video_out, fcc, fps, w, h, col)
     cnt = 0
 
   while true:
@@ -133,7 +135,7 @@ proc main()=
     img_tmp = img_dst.imShow("Dst")
 
     let mat_tmp: Mat = newMat(img_tmp.width, img_tmp.height, CV_8UC3,
-      cast[ptr uint8](img_tmp.imageData[0].addr)) # imageData is not copied ?
+      img_tmp.imageData) # imageData is not copied ?
     wr.write(mat_tmp)
     cnt += 1
 
