@@ -41,18 +41,19 @@
 #//M
 
 {.deadCodeElim: on.}
+include dynlibimporter
 when defined(windows):
   const
-    coredll = "(lib|)opencv_(world|core)(|341|345|3412|452)(|d).dll"
-    imgprocdll = "(lib|)opencv_(world|imgproc)(|341|345|3412|452)(|d).dll"
+    coredll = getDllName("core", "dll")
+    imgprocdll = getDllName("imgproc", "dll")
 elif defined(macosx):
   const
-    coredll = "libopencv_core.dylib"
-    imgprocdll = "libopencv_imgproc.dylib"
+    coredll = getDllName("core", "dylib")
+    imgprocdll = getDllName("imgproc", "dylib")
 else:
   const
-    coredll = "libopencv_core.so"
-    imgprocdll = "libopencv_imgproc.so"
+    coredll = getDllName("core", "so")
+    imgprocdll = getDllName("imgproc", "so")
 include types
 
 #from math import round

@@ -41,15 +41,16 @@
 #//M
 
 {.deadCodeElim: on.}
+include dynlibimporter
 when defined(windows):
   const
-    imgprocdll = "(lib|)opencv_(world|imgproc)(|341|345|3412|452)(|d).dll"
+    imgprocdll = getDllName("imgproc", "dll")
 elif defined(macosx):
   const
-    imgprocdll = "libopencv_imgproc.dylib"
+    imgprocdll = getDllName("imgproc", "dylib")
 else:
   const
-    imgprocdll = "libopencv_imgproc.so"
+    imgprocdll = getDllName("imgproc", "so")
 include opencv/imgproc/iptypes
 
 

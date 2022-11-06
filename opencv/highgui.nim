@@ -40,21 +40,22 @@
 #//M
 
 {.deadCodeElim: on.}
+include dynlibimporter
 when defined(windows):
   const
-    highguidll = "(lib|)opencv_(world|highgui)(|341|345|3412|452)(d|).dll"
-    videoiodll = "(lib|)opencv_(world|videoio)(|341|345|3412|452)(|d).dll"
-    imgcodecsdll = "(lib|)opencv_(world|imgcodecs)(|341|345|3412|452)(|d).dll"
+    highguidll = getDllName("highgui", "dll")
+    videoiodll = getDllName("videoio", "dll")
+    imgcodecsdll = getDllName("imgcodecs", "dll")
 elif defined(macosx):
   const
-    highguidll = "libopencv_highgui.dylib"
-    videoiodll = "libopencv_videoio.dylib"
-    imgcodecsdll = "libopencv_imgcodecs.dylib"
+    highguidll = getDllName("highgui", "dylib")
+    videoiodll = getDllName("videoio", "dylib")
+    imgcodecsdll = getDllName("imgcodecs", "dylib")
 else:
   const
-    highguidll = "libopencv_highgui.so"
-    videoiodll = "libopencv_videoio.so"
-    imgcodecsdll = "libopencv_imgcodecs.so"
+    highguidll = getDllName("highgui", "so")
+    videoiodll = getDllName("videoio", "so")
+    imgcodecsdll = getDllName("imgcodecs", "so")
 
 import core
 
