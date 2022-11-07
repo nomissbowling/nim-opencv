@@ -8,9 +8,8 @@ import os, strformat, strutils
 
 proc getDllName(key: string, ext: string): string =
   result = "not_found_OpenCV_dynlib_see_compile_time_messages_above"
-  # TODO: now suport OpenCV 3, pull top version "452" after support OpenCV 4
-  # let vers: seq[string] = @["452", "3412", "345", "341", "249", "231"]
-  let vers: seq[string] = @["3412", "452", "345", "341", "249", "231"]
+  # suport OpenCV 4 and 3
+  let vers: seq[string] = @["452", "3412", "345", "341", "249", "231"]
 
   var names: seq[string] = @[]
   for prefix in @["lib", ""]:

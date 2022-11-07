@@ -1,24 +1,17 @@
 # camera_mat.nim is a rewrite version of camera.nim (tested on MinGW x64)
+# It works good on OpenCV 3.4.12 and OpenCV 4.5.2
 #
 # compile with nim cpp --passC:-I<include_path> --passL:<libopencv_XXX.a>
 # compile with -d:nocamera when no camera
 #
-# TODO: It uses Mat for cv::VideoCapture, but uses TIplImage yet, should rewrite all to Mat.
-# TODO: It works good on OpenCV 3.4.12 but *NOT* works on OpenCV 4.5.2
-#  Because OpenCV 3 supports both C and C++ API
-#  but OpenCV 4 does not support C legacy API anymore. (cvLoadImage etc)
-#  So should use only Mat and remove all TIplImage interfaces from:
-#   core.nim : coredll* = "(lib|)opencv_core(|249|231)(|d).dll"
-#   core.nim : imgprocdll* = "(lib|)opencv_core(|249|231)(|d).dll"
-#   highgui.nim : highguidll* = "(lib|)opencv_highgui(249|231|)(d|).dll"
-#   highgui.nim : videoiodll* = "(lib|)opencv_videoio(249|231|)(d|).dll"
-#   highgui.nim : imgcodecsdll* = "(lib|)opencv_imgcodecs(249|231|)(d|).dll"
-#   imgproc.nim : imgprocdll = "(lib|)opencv_imgproc(|341|345)(|d).dll"
+# TODO: some proc are adhoc version yet (rectangle resize etc)
+# TODO: mat_frm may be img_frm directly
+# TODO: replace TScalar TPoint TRect etc to cv::Scalar cv::Point cv::Rect etc
 
 import os
 import strformat, strutils
-import opencv/[core, highgui, imgproc]
-import opencv/[mat, video]
+# import opencv/[core, highgui, imgproc] # never import them OpenCV >= 4
+import opencv/[types, constants, mat, video]
 
 const
   test_path = currentSourcePath.splitFile.dir
@@ -33,49 +26,45 @@ when not defined(nocamera):
     # cap_src = test_video_in # file resource
     # cap_src = "udp://127.0.0.1:11111" # needs ffmpeg OpenCV H.264
 
-proc newTIplImage*(m: Mat): ptr TIplImage =
-  let
-    d = if m.depth > 0: m.depth else: 8 # sometimes camera returns 0
-    c = if m.channels > 0: m.channels else: 3
-  result = createImage(size(m.cols.cint, m.rows.cint), d, c)
-  result.imageData = cast[cstring](m.data) # expect copy
-
-proc imShow(img: ptr TArr, ttl: string, width: cint=640, height: cint=480,
-  bgc: TScalar=scalar(192, 192, 192, 0)): ptr TArr {.discardable.} =
+proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
+  bgc: TScalar=scalar(192, 192, 192, 0)): Mat {.discardable.} =
   var w, h: cint
-  if img.width < img.height:
+  if img.cols < img.rows:
     w = width
-    h = img.height * width div img.width
+    h = img.rows.cint * width div img.cols.cint
   else:
-    w = img.width * height div img.height
+    w = img.cols.cint * height div img.rows.cint
     h = height
   let
-    im = createImage(size(width, height), img.depth, img.nChannels)
-    tmp = createImage(size(w, h), img.depth, img.nChannels)
-  im.rectangle(point(0, 0), point(width, height), bgc, -1) # fill: thickness=-1
-  img.resize(tmp)
-  #tmp.setImageROI(rect(0, 0, width, height))
-  im.setImageROI(rect(0, 0, w, h))
-  tmp.copy(im)
-  im.resetImageROI
-  showImage(ttl, im)
+    im = newMat(height, width, img.type)
+    tmp = newMat(h, w, img.type)
+  im.rectangle(rect(0, 0, width, height), bgc, -1) # fill: thickness=-1
+  img.resize(tmp, w, h, 0, 0, 4) # INTER_LANCZOS4
+
+  when false:
+    var im_roi: Mat = newMat(im, newRect(0, 0, w, h))
+    tmp.copyTo(im_roi)
+  else:
+    tmp.copyTo(im(newRect(0, 0, w, h)))
+
+  imshow(ttl, im)
   result = im # imageData is not copied ?
 
 proc main()=
   for wn in @["Src", "Gray", "Diff", "Dst",
     "Color", "Rectangle", "Laplace", "Canny"]:
-    discard namedWindow(cast[cstring](wn[0].unsafeAddr), WINDOW_AUTOSIZE)
+    namedWindow(cast[cstring](wn[0].unsafeAddr), WINDOW_AUTOSIZE)
 
   for fn in @[test_qr, test_qr_box]:
     if not fn.fileExists(): quit(fmt"[Error] Cannot find test file: {fn}")
 
   let
-    img_box = loadImage(test_qr_box, 0)
-    img_color = loadImage(test_qr, 1)
-    lt = point(img_box.width * 2, img_box.height + 5)
-    rb = point(lt.x + img_box.width, lt.y + img_box.height)
+    img_box = imread(test_qr_box, 11) # ignore loadImage iscolor=0
+    img_color = imread(test_qr, 11) # ignore loadImage iscolor=1
+    lt = point(img_box.cols.cint * 2, img_box.rows.cint + 5)
+    rb = point(lt.x + img_box.cols.cint, lt.y + img_box.rows.cint)
     red = scalar(0, 0, 255, 0) # BGRA
-    img_rct = img_color.cloneImage
+    img_rct = img_color.clone
   img_rct.rectangle(lt, rb, red, 5) # thickness=5
 
   when not defined(nocamera):
@@ -103,23 +92,23 @@ proc main()=
 
   while true:
     let
-      img_gray = loadImage(test_qr, 0)
-      img_laplace = img_gray.cloneImage
-      img_canny = img_gray.cloneImage
-    img_gray.laplace(img_laplace)
-    img_gray.canny(img_canny, 0.8, 1.0, 3)
+      img_gray = imread(test_qr, 11) # ignore loadImage iscolor=0
+      img_laplace = img_gray.clone
+      img_canny = img_gray.clone
+    img_gray.Laplacian(img_laplace, img_gray.depth) # other opts
+    img_gray.Canny(img_canny, 0.8, 1.0, 3, false)
 
     img_color.imShow("Color", 320, 240) # BGRA (default light gray)
     img_rct.imShow("Rectangle", 320, 240, scalar(32, 192, 240, 0)) # BGRA
     img_laplace.imShow("Laplace", 320, 240, scalar(64, 0, 0, 0)) # 1ch g000 LE
     img_canny.imShow("Canny", 320, 240, scalar(128, 0, 0, 0)) # 1ch g000 LE
 
-    var img_frm, img_dif, img_dst, img_tmp: ptr TArr
+    var img_frm, img_dif, img_dst, img_tmp: Mat
     when not defined(nocamera):
       var mat_frm: Mat
       if not cap.read(mat_frm):
         echo "No video/camera"
-        discard highgui.waitKey(5000.cint) # should use mat.waitKey
+        waitKey(5000.cint)
         break
       if mat_frm.empty: continue
       # echo fmt"camera ({mat_frm.rows}, {mat_frm.cols})"
@@ -127,29 +116,29 @@ proc main()=
         let tmp: ImgPtr = mat_frm # not work converter toImg*(m: Mat):ImgPtr
         img_frm = tmp # types.ImgPtr in mat.nim is not same as core.ImgPtr
       else:
-        img_frm = mat_frm.newTIplImage
+        img_frm = newMat(mat_frm)
     else:
-      img_frm = img_rct.cloneImage
-    img_tmp = createImage(size(img_frm.width, img_frm.height), 8, 1)
+      img_frm = img_rct.clone
+    img_tmp = newMat(img_frm.rows.cint, img_frm.cols.cint, CV_8UC1)
     img_frm.cvtColor(img_tmp, 6) # COLOR_BGR2GRAY (to 8UC1)
-    img_dst = img_frm.cloneImage
+    img_dst = img_frm.clone
     img_tmp.cvtColor(img_dst, 8) # COLOR_GRAY2BGR (must to 8UC3)
-    img_dif = img_frm.cloneImage
+    img_dif = img_frm.clone
     when not defined(nocamera):
-      img_frm.absDiff(img_dst, img_dif)
+      let roi = newRect(160, 120, 320, 240)
+      img_frm(roi).absDiff(img_dst(roi), img_dif(roi))
     else:
-      img_frm.absDiff(img_color, img_dif)
+      let roi = newRect(100, 30, 60, 60)
+      img_frm(roi).absDiff(img_color(roi), img_dif(roi))
     img_frm.imShow("Src")
     img_gray.imShow("Gray")
     img_dif.imShow("Diff")
     img_tmp = img_dst.imShow("Dst")
 
-    let mat_tmp: Mat = newMat(img_tmp.width, img_tmp.height, CV_8UC3,
-      img_tmp.imageData) # imageData is not copied ?
-    wr.write(mat_tmp)
+    wr.write(img_tmp)
     cnt += 1
 
-    let k = highgui.waitKey(1.cint) and 0xff # should use mat.waitKey
+    let k = waitKey(1.cint) and 0xff
     if k == 0x1b or k == 'q'.ord: break
 
   wr.release

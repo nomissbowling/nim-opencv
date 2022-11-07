@@ -40,7 +40,7 @@
 #//M
 
 {.deadCodeElim: on.}
-include dynlibimporter
+include dynlibimporter # not use import for search dll at compile time
 when defined(windows):
   const
     highguidll = getDllName("highgui", "dll")

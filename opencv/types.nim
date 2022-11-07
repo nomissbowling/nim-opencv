@@ -62,94 +62,6 @@ type
   TStatus* = cint
 
 #***************************************************************************************\
-#                                  Image type (IplImage)                                 *
-#\***************************************************************************************
-
-const
-  IPL_DEPTH_SIGN* = 0x80000000
-  IPL_DEPTH_1U* = 1
-  IPL_DEPTH_8U* = 8
-  IPL_DEPTH_16U* = 16
-  IPL_DEPTH_32F* = 32
-  IPL_DEPTH_8S* = (IPL_DEPTH_SIGN or 8)
-  IPL_DEPTH_16S* = (IPL_DEPTH_SIGN or 16)
-  IPL_DEPTH_32S* = (IPL_DEPTH_SIGN or 32)
-  IPL_DATA_ORDER_PIXEL* = 0
-  IPL_DATA_ORDER_PLANE* = 1
-  IPL_ORIGIN_TL* = 0
-  IPL_ORIGIN_BL* = 1
-  IPL_ALIGN_4BYTES* = 4
-  IPL_ALIGN_8BYTES* = 8
-  IPL_ALIGN_16BYTES* = 16
-  IPL_ALIGN_32BYTES* = 32
-  IPL_ALIGN_DWORD* = IPL_ALIGN_4BYTES
-  IPL_ALIGN_QWORD* = IPL_ALIGN_8BYTES
-  IPL_BORDER_CONSTANT* = 0
-  IPL_BORDER_REPLICATE* = 1
-  IPL_BORDER_REFLECT* = 2
-  IPL_BORDER_WRAP* = 3
-
-type
-  TIplImage* {.pure, bycopy, final.} = object
-    nSize*: cint              # sizeof(IplImage)
-    id*: cint                 # version (=0)
-    nChannels*: cint          # Most of OpenCV functions support 1,2,3 or 4 channels
-    alphaChannel*: cint       # Ignored by OpenCV
-    depth*: cint # Pixel depth in bits: IPL_DEPTH_8U, IPL_DEPTH_8S, IPL_DEPTH_16S,
-                 #                               IPL_DEPTH_32S, IPL_DEPTH_32F and IPL_DEPTH_64F are supported.
-    colorModel*: array[0..4 - 1, char] # Ignored by OpenCV
-    channelSeq*: array[0..4 - 1, char] # ditto
-    dataOrder*: cint # 0 - interleaved color channels, 1 - separate color channels.
-                     #                               cvCreateImage can only create interleaved images
-    origin*: cint             # 0 - top-left origin,
-                              #                               1 - bottom-left origin (Windows bitmaps style).
-    align*: cint              # Alignment of image rows (4 or 8).
-                              #                               OpenCV ignores it and uses widthStep instead.
-    width*: cint              # Image width in pixels.
-    height*: cint             # Image height in pixels.
-    roi*: ptr TIplROI          # Image ROI. If NULL, the whole image is selected.
-    maskROI*: ptr TIplImage    # Must be NULL.
-    imageId*: pointer         # "           "
-    tileInfo*: ptr TIplTileInfo # "           "
-    imageSize*: cint # Image data size in bytes
-                     #                               (==image->height*image->widthStep
-                     #                               in case of interleaved data)
-    imageData*: cstring       # Pointer to aligned image data.
-    widthStep*: cint          # Size of aligned image row in bytes.
-    borderMode*: array[0..4 - 1, cint] # Ignored by OpenCV.
-    borderConst*: array[0..4 - 1, cint] # Ditto.
-    imageDataOrigin*: cstring # Pointer to very origin of image data
-                              #                               (not necessarily aligned) -
-                              #                               needed for correct deallocation
-
-  TIplTileInfo* {.pure, bycopy, final.} = object
-
-  TIplROI* {.pure, bycopy, final.} = object
-    coi*: cint                # 0 - no COI (all channels are selected), 1 - 0th channel is selected ...
-    xOffset*: cint
-    yOffset*: cint
-    width*: cint
-    height*: cint
-
-  TIplConvKernel* {.pure, bycopy, final.} = object
-    nCols*: cint
-    nRows*: cint
-    anchorX*: cint
-    anchorY*: cint
-    values*: ptr cint
-    nShiftR*: cint
-
-  TIplConvKernelFP* {.pure, bycopy, final.} = object
-    nCols*: cint
-    nRows*: cint
-    anchorX*: cint
-    anchorY*: cint
-    values*: ptr cfloat
-
-  TArr* = TIplImage
-  ImgPtr* = ptr TArr
-
-#***************************************************************************************\
 #                                  Matrix type (CvMat)                                   *
 #\***************************************************************************************
 
@@ -378,13 +290,13 @@ const
 const
   HIST_UNIFORM* = 1
 
-type
-  THistogram* {.pure, bycopy, final.} = object
-    theType*: cint
-    bins*: ptr TArr
-    thresh*: array[0..2 - 1, array[0..MAX_DIM - 1, cfloat]] # For uniform histograms.
-    thresh2*: ptr ptr cfloat  # For non-uniform histograms.
-    mat*: TMatND              # Embedded matrix header for array histograms.
+#type
+#  THistogram* {.pure, bycopy, final.} = object
+#    theType*: cint
+#    bins*: ptr TArr
+#    thresh*: array[0..2 - 1, array[0..MAX_DIM - 1, cfloat]] # For uniform histograms.
+#    thresh2*: ptr ptr cfloat  # For non-uniform histograms.
+#    mat*: TMatND              # Embedded matrix header for array histograms.
 
 
 #***************************************************************************************\
@@ -408,17 +320,17 @@ proc rect*(x: cint; y: cint; width: cint; height: cint): TRect {.cdecl.} =
   r.height = height
   return r
 
-proc rectToROI*(rect: TRect; coi: cint): TIplROI {.cdecl.} =
-  var roi: TIplROI
-  roi.xOffset = rect.x
-  roi.yOffset = rect.y
-  roi.width = rect.width
-  roi.height = rect.height
-  roi.coi = coi
-  return roi
+#proc rectToROI*(rect: TRect; coi: cint): TIplROI {.cdecl.} =
+#  var roi: TIplROI
+#  roi.xOffset = rect.x
+#  roi.yOffset = rect.y
+#  roi.width = rect.width
+#  roi.height = rect.height
+#  roi.coi = coi
+#  return roi
 
-proc rOIToRect*(roi: TIplROI): TRect {.cdecl.} =
-  return rect(roi.xOffset, roi.yOffset, roi.width, roi.height)
+#proc rOIToRect*(roi: TIplROI): TRect {.cdecl.} =
+#  return rect(roi.xOffset, roi.yOffset, roi.width, roi.height)
 
 #********************************** CvTermCriteria ************************************
 

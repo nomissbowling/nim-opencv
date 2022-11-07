@@ -41,7 +41,7 @@
 #//M
 
 {.deadCodeElim: on.}
-include dynlibimporter
+include dynlibimporter # not use import for search dll at compile time
 when defined(windows):
   const
     coredll = getDllName("core", "dll")
