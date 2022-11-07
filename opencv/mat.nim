@@ -6,6 +6,14 @@ const
 import types, constants
 
 type
+    Vector* {.importcpp: "std::vector", header: "<vector>".}[T] = object
+
+    Rect* {.importcpp:"cv::Rect_", header: cv2hdr.} [T] = object
+        x* {.importc.}: T
+        y* {.importc.}: T
+        width* {.importc.}: T
+        height* {.importc.}: T
+
     Mat* {.importcpp: "cv::Mat", header: cv2hdr.} = object
         flags*: int
         # //! the matrix dimensionality, >= 2
@@ -14,13 +22,10 @@ type
         rows*, cols*: int
         # //! pointer to the data
         data*: pointer
-    Rect* {.importcpp:"cv::Rect_", header: cv2hdr.} [T] = object
-        x* {.importc.}: T
-        y* {.importc.}: T
-        width* {.importc.}: T
-        height* {.importc.}: T
 
-type Vector* {.importcpp: "std::vector", header: "<vector>".}[T] = object
+{.experimental: "callOperator".}
+proc `()`*(src: Mat; roi: Rect): Mat {.importcpp:"#(#)", header: cv2hdr.}
+
 proc `[]=`*[T](this: var Vector[T]; key: int; val: T) {.
   importcpp: "#[#] = #", header: "<vector>".}
 proc `[]`*[T](this: Vector[T]|var Vector[T]; key: int): T {.importcpp: "#[#]", header: "<vector>".}
@@ -41,8 +46,6 @@ proc newMat*(h, w, typ: cint): Mat {.importcpp:"cv::Mat(#, #, #)", header: cv2hd
 proc newMat*(h, w, typ: cint; dat: cstring): Mat {.importcpp:"cv::Mat(#, #, #, #)", header: cv2hdr.}
 proc newMat*(src: Mat; x, y, w, h: cint): Mat {.importcpp:"cv::Mat(#, cv::Rect(#, #, #, #))", header: cv2hdr.} # adhoc
 proc newMat*(src: Mat; roi: Rect): Mat {.importcpp:"cv::Mat(#, #)", header: cv2hdr.}
-{.experimental: "callOperator".}
-proc `()`*(src: Mat; roi: Rect): Mat {.importcpp:"#(#)", header: cv2hdr.}
 # converter toMat*(img: ImgPtr):Mat {.importcpp:"cv::cvarrToMat(#)", header: cv2hdr.}
 # converter toImg*(m: Mat):ImgPtr {.importcpp:"(void*)(new IplImage(#))", header: cv2hdr.}
 proc empty*(m: Mat):bool {.importcpp, header: cv2hdr.}
