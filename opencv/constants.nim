@@ -1,3 +1,43 @@
+# imgcodecs
+
+type
+  ImreadModes* = enum
+    IMREAD_UNCHANGED = -1,  # image as is alpha/cropped Ignore EXIF orientation
+    IMREAD_GRAYSCALE = 0,   # always 1ch grayscale (codec internal conversion)
+    IMREAD_COLOR = 1,       # always 3ch BGR
+    IMREAD_ANYDEPTH = 2,    # 16/32bit when corresponding depth or to 8bit
+    IMREAD_ANYCOLOR = 4,    # any possible color format
+    IMREAD_LOAD_GDAL = 8,   # the gdal driver for loading the image
+    IMREAD_REDUCED_GRAYSCALE_2 = 16,  # always 1ch grayscale size reduced 1/2
+    IMREAD_REDUCED_COLOR_2 = 17,      # always 3ch BGR size reduced 1/2
+    IMREAD_REDUCED_GRAYSCALE_4 = 32,  # always 1ch grayscale size reduced 1/4
+    IMREAD_REDUCED_COLOR_4 = 33,      # always 3ch BGR size reduced 1/4
+    IMREAD_REDUCED_GRAYSCALE_8 = 64,  # always 1ch grayscale size reduced 1/8
+    IMREAD_REDUCED_COLOR_8 = 65,      # always 3ch BGR size reduced 1/8
+    IMREAD_IGNORE_ORIENTATION = 128   #
+
+type
+  ImwriteFlags* = enum
+    IMWRITE_JPEG_QUALITY = 1,         # Low 0 - 100 High (default 95)
+    IMWRITE_JPEG_PROGRESSIVE = 2,     # default False
+    IMWRITE_JPEG_OPTIMIZE = 3,        # default False
+    IMWRITE_JPEG_RST_INTERVAL = 4,    # restart interval 0 - 65535 (default 0)
+    IMWRITE_JPEG_LUMA_QUALITY = 5,    # 0 - 100 (default 0) don't use
+    IMWRITE_JPEG_CHROMA_QUALITY = 6,  # 0 - 100 (default 0) don't use
+    IMWRITE_PNG_COMPRESSION = 16,     # 0 - 9 (default 1)
+    IMWRITE_PNG_STRATEGY = 17,        # (default IMWRITE_PNG_STRATEGY_RLE)
+    IMWRITE_PNG_BILEVEL = 18,         # Binary level PNG 0 or 1 (default 0)
+    IMWRITE_PXM_BINARY = 32,          # PPM, PGM, or PBM binary (default 1)
+    IMWRITE_EXR_TYPE = 48,        # (3 << 4)+0 EXR storage type (default FP32)
+    IMWRITE_EXR_COMPRESSION = 49, # (3 << 4)+1 (default ZIP_COMPRESSION=3)
+    IMWRITE_WEBP_QUALITY = 64,        # 1 - 100 (default above 100 lossless)
+    IMWRITE_PAM_TUPLETYPE = 128,      #
+    IMWRITE_TIFF_RESUNIT = 256,       # DPI resolution unit
+    IMWRITE_TIFF_XDPI = 257,          # X direction DPI
+    IMWRITE_TIFF_YDPI = 258,          # Y direction DPI
+    IMWRITE_TIFF_COMPRESSION = 259,   # CV_32F (default LZW)
+    IMWRITE_JPEG2000_COMPRESSION_X1000 = 272  # 0 - 1000 (default 1000)
+
 # highgui
 
 const                       #These 3 flags are used by cvSet/GetWindowProperty
@@ -164,3 +204,85 @@ const # modes of the controlling registers (can be: auto, manual, auto single pu
   CAP_PROP_GIGA_FRAME_SENS_WIDTH* = 10005
   CAP_PROP_GIGA_FRAME_SENS_HEIGH* = 10006
 
+const
+  CN_MAX* = 512
+  CN_SHIFT* = 3
+  DEPTH_MAX* = (1 shl CN_SHIFT)
+  CV_8U* = 0
+  CV_8S* = 1
+  CV_16U* = 2
+  CV_16S* = 3
+  CV_32S* = 4
+  CV_32F* = 5
+  CV_64F* = 6
+  USRTYPE1* = 7
+  MAT_DEPTH_MASK* = (DEPTH_MAX - 1)
+
+template Mat_Depth*(flags: untyped): untyped =
+  ((flags) and MAT_DEPTH_MASK)
+
+template maketype*(depth, cn: untyped): untyped =
+  (MAT_DEPTH(depth) + (((cn) - 1) shl CN_SHIFT))
+
+const
+  CV_8UC1* = maketype(CV_8U, 1)
+  CV_8UC2* = maketype(CV_8U, 2)
+  CV_8UC3* = maketype(CV_8U, 3)
+  CV_8UC4* = maketype(CV_8U, 4)
+
+template Cv_8uc*(n: untyped): untyped =
+  MAKETYPE(CV_8U, (n))
+
+const
+  CV_8SC1* = maketype(CV_8S, 1)
+  CV_8SC2* = maketype(CV_8S, 2)
+  CV_8SC3* = maketype(CV_8S, 3)
+  CV_8SC4* = maketype(CV_8S, 4)
+
+template Cv_8sc*(n: untyped): untyped =
+  MAKETYPE(CV_8S, (n))
+
+const
+  CV_16UC1* = maketype(CV_16U, 1)
+  CV_16UC2* = maketype(CV_16U, 2)
+  CV_16UC3* = maketype(CV_16U, 3)
+  CV_16UC4* = maketype(CV_16U, 4)
+
+template Cv_16uc*(n: untyped): untyped =
+  MAKETYPE(CV_16U, (n))
+
+const
+  CV_16SC1* = maketype(CV_16S, 1)
+  CV_16SC2* = maketype(CV_16S, 2)
+  CV_16SC3* = maketype(CV_16S, 3)
+  CV_16SC4* = maketype(CV_16S, 4)
+
+template Cv_16sc*(n: untyped): untyped =
+  MAKETYPE(CV_16S, (n))
+
+const
+  CV_32SC1* = maketype(CV_32S, 1)
+  CV_32SC2* = maketype(CV_32S, 2)
+  CV_32SC3* = maketype(CV_32S, 3)
+  CV_32SC4* = maketype(CV_32S, 4)
+
+template Cv_32sc*(n: untyped): untyped =
+  MAKETYPE(CV_32S, (n))
+
+const
+  CV_32FC1* = maketype(CV_32F, 1)
+  CV_32FC2* = maketype(CV_32F, 2)
+  CV_32FC3* = maketype(CV_32F, 3)
+  CV_32FC4* = maketype(CV_32F, 4)
+
+template Cv_32fc*(n: untyped): untyped =
+  MAKETYPE(CV_32F, (n))
+
+const
+  CV_64FC1* = maketype(CV_64F, 1)
+  CV_64FC2* = maketype(CV_64F, 2)
+  CV_64FC3* = maketype(CV_64F, 3)
+  CV_64FC4* = maketype(CV_64F, 4)
+
+template Cv_64fc*(n: untyped): untyped =
+  MAKETYPE(CV_64F, (n))

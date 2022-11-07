@@ -3,15 +3,11 @@
 #
 # compile with nim cpp --passC:-I<include_path> --passL:<libopencv_XXX.a>
 # compile with -d:nocamera when no camera
-#
-# TODO: some proc are adhoc version yet (rectangle resize etc)
-# TODO: mat_frm may be img_frm directly
-# TODO: replace TScalar TPoint TRect etc to cv::Scalar cv::Point cv::Rect etc
 
 import os
 import strformat, strutils
 # import opencv/[core, highgui, imgproc] # never import them OpenCV >= 4
-import opencv/[types, constants, mat, video]
+import opencv/[constants, mat, video]
 
 const
   test_path = currentSourcePath.splitFile.dir
@@ -27,7 +23,7 @@ when not defined(nocamera):
     # cap_src = "udp://127.0.0.1:11111" # needs ffmpeg OpenCV H.264
 
 proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
-  bgc: TScalar=scalar(192, 192, 192, 0)): Mat {.discardable.} =
+  bgc: Scalar[int]=newScalar(192, 192, 192, 0)): Mat {.discardable.} =
   var w, h: cint
   if img.cols < img.rows:
     w = width
@@ -38,8 +34,8 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
   let
     im = newMat(height, width, img.type)
     tmp = newMat(h, w, img.type)
-  im.rectangle(rect(0, 0, width, height), bgc, -1) # fill: thickness=-1
-  img.resize(tmp, w, h, 0, 0, 4) # INTER_LANCZOS4
+  im.rectangle(newRect(0, 0, width, height), bgc, -1) # fill: thickness=-1
+  img.resize(tmp, newSize(w, h), 0, 0, 4) # INTER_LANCZOS4
 
   when false:
     var im_roi: Mat = newMat(im, newRect(0, 0, w, h))
@@ -51,6 +47,8 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
   result = im # imageData is not copied ?
 
 proc main()=
+  echo fmt"OpenCV: {$getBuildInformation()}"
+
   for wn in @["Src", "Gray", "Diff", "Dst",
     "Color", "Rectangle", "Laplace", "Canny"]:
     namedWindow(cast[cstring](wn[0].unsafeAddr), WINDOW_AUTOSIZE)
@@ -61,9 +59,9 @@ proc main()=
   let
     img_box = imread(test_qr_box, 11) # ignore loadImage iscolor=0
     img_color = imread(test_qr, 11) # ignore loadImage iscolor=1
-    lt = point(img_box.cols.cint * 2, img_box.rows.cint + 5)
-    rb = point(lt.x + img_box.cols.cint, lt.y + img_box.rows.cint)
-    red = scalar(0, 0, 255, 0) # BGRA
+    lt = newPoint(img_box.cols.cint * 2, img_box.rows.cint + 5)
+    rb = newPoint(lt.x + img_box.cols.cint, lt.y + img_box.rows.cint)
+    red = newScalar(0, 0, 255, 0) # BGRA
     img_rct = img_color.clone
   img_rct.rectangle(lt, rb, red, 5) # thickness=5
 
@@ -99,27 +97,21 @@ proc main()=
     img_gray.Canny(img_canny, 0.8, 1.0, 3, false)
 
     img_color.imShow("Color", 320, 240) # BGRA (default light gray)
-    img_rct.imShow("Rectangle", 320, 240, scalar(32, 192, 240, 0)) # BGRA
-    img_laplace.imShow("Laplace", 320, 240, scalar(64, 0, 0, 0)) # 1ch g000 LE
-    img_canny.imShow("Canny", 320, 240, scalar(128, 0, 0, 0)) # 1ch g000 LE
+    img_rct.imShow("Rectangle", 320, 240, newScalar(32, 192, 240, 0)) # BGRA
+    img_laplace.imShow("Laplace", 320, 240, newScalar(64, 0, 0, 0)) # 1ch g000 LE
+    img_canny.imShow("Canny", 320, 240, newScalar(128, 0, 0, 0)) # 1ch g000 LE
 
     var img_frm, img_dif, img_dst, img_tmp: Mat
     when not defined(nocamera):
-      var mat_frm: Mat
-      if not cap.read(mat_frm):
+      if not cap.read(img_frm):
         echo "No video/camera"
         waitKey(5000.cint)
         break
-      if mat_frm.empty: continue
-      # echo fmt"camera ({mat_frm.rows}, {mat_frm.cols})"
-      when false:
-        let tmp: ImgPtr = mat_frm # not work converter toImg*(m: Mat):ImgPtr
-        img_frm = tmp # types.ImgPtr in mat.nim is not same as core.ImgPtr
-      else:
-        img_frm = newMat(mat_frm)
+      if img_frm.empty: continue
+      # echo fmt"camera ({img_frm.rows}, {img_frm.cols})"
     else:
       img_frm = img_rct.clone
-    img_tmp = newMat(img_frm.rows.cint, img_frm.cols.cint, CV_8UC1)
+    img_tmp = newMat(newSize(img_frm.cols, img_frm.rows), CV_8UC1)
     img_frm.cvtColor(img_tmp, 6) # COLOR_BGR2GRAY (to 8UC1)
     img_dst = img_frm.clone
     img_tmp.cvtColor(img_dst, 8) # COLOR_GRAY2BGR (must to 8UC3)
