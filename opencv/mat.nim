@@ -8,7 +8,7 @@ import constants
 {.push header: "<vector>".}
 
 type
-  Vector* {.importcpp: "std::vector".} [T] = object
+  Vector*[T] {.importcpp: "std::vector".} = object
 
 proc `[]=`*[T](this: var Vector[T]; key: int; val: T)
   {.importcpp: "#[#] = #".}
@@ -35,7 +35,7 @@ iterator pairs*[T](v: Vector[T]): tuple[key: int, val: T] =
 {.push header: cv2hdr.}
 
 type
-  Size* {.importcpp: "cv::Size_".} [T] = object
+  Size*[T] {.importcpp: "cv::Size_".} = object
     width* {.importc.}: T
     height* {.importc.}: T
 
@@ -43,7 +43,7 @@ proc newSize*[T](width, height: T): Size[T]
   {.importcpp: "cv::Size(@)".}
 
 type
-  Point* {.importcpp: "cv::Point_".} [T] = object
+  Point*[T] {.importcpp: "cv::Point_".} = object
     x* {.importc.}: T
     y* {.importc.}: T
 
@@ -51,7 +51,7 @@ proc newPoint*[T](x, y: T): Point[T]
   {.importcpp: "cv::Point(@)".}
 
 type
-  Rect* {.importcpp: "cv::Rect_".} [T] = object
+  Rect*[T] {.importcpp: "cv::Rect_".} = object
     x* {.importc.}: T
     y* {.importc.}: T
     width* {.importc.}: T
@@ -61,7 +61,7 @@ proc newRect*[T](x, y, width, height: T): Rect[T]
   {.importcpp: "cv::Rect(@)".}
 
 type
-  Scalar* {.importcpp: "cv::Scalar_".} [T] = object
+  Scalar*[T] {.importcpp: "cv::Scalar_".} = object
     b* {.importc.}: T
     g* {.importc.}: T
     r* {.importc.}: T
@@ -109,16 +109,16 @@ proc newMat*(src: Mat; roi: Rect): Mat
   {.importcpp: "cv::Mat(#, #)".}
 
 proc empty*(m: Mat): bool
-  {.importcpp.}
+  {.importcpp: "#.empty()".}
 
 proc type*(m: Mat): cint
   {.importcpp: "#.type()".}
 
 proc depth*(m: Mat): cint
-  {.importcpp.}
+  {.importcpp: "#.depth()".}
 
 proc channels*(m: Mat): cint
-  {.importcpp.}
+  {.importcpp: "#.channels()".}
 
 proc total*(m: Mat): int
   {.importcpp: "#.total()".}
@@ -132,12 +132,12 @@ proc rectangle*(m: Mat; rct: Rect; col: Scalar; thickness: cint=1; lineType: cin
 proc absdiff*(src1: Mat; src2: Mat; dst: Mat)
   {.importcpp: "cv::absdiff(#, #, #)".}
 
-# proc absdiffS*(src: Mat; dst: Mat; val: TScalar)
+# proc absdiffS*(src: Mat; dst: Mat; col: Scalar)
 #   {.importcpp: "cv::absdiffS(#, #, #)".} # not exist ?
 
 # imgproc
 
-proc resize*(src: Mat; dst: Mat; wh: Size; fx: cdouble, fy: cdouble, interpolation: cint=1) # INTER_LINEAR
+proc resize*(src: Mat; dst: Mat; wh: Size; fx: cdouble, fy: cdouble, interpolation: cint=INTER_LINEAR)
   {.importcpp: "cv::resize(#, #, #, #, #, #)".}
 
 proc cvtColor*(src: Mat; dst: Mat; code: cint)
@@ -178,7 +178,8 @@ proc selectROIs*(title: cstring, m:Mat, boxs:Vector[Rect[cint]], showCrosshair=t
 proc imwrite*(fn: cstring, m: Mat): bool
   {.importcpp: "cv::imwrite(std::string(#), #)".}
 
-proc imread*(fn: cstring, flags: int=11): Mat
+proc imread*(fn: cstring, flags: int=ImFlags(IMREAD_COLOR, IMREAD_ANYDEPTH, IMREAD_LOAD_GDAL)): Mat
+  # channels may be 4 or 3
   {.importcpp: "cv::imread(std::string(#), #)".}
 
 proc getBuildInformation*(): cstring

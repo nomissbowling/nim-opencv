@@ -20,20 +20,20 @@ proc newVideoCapture*(fn: cstring): VideoCapture
 proc newVideoCapture*(c: cint): VideoCapture
   {.importcpp: "cv::VideoCapture(#)".}
 
-proc isOpened*(cap: VideoCapture):bool
-  {.importcpp, discardable.}
+proc isOpened*(cap: VideoCapture): bool
+  {.importcpp: "#.isOpened()", discardable.}
 
-proc get*(cap: VideoCapture, p: cint):cdouble
+proc get*(cap: VideoCapture, p: cint): cdouble
   {.importcpp: "#.get(@)".}
 
-proc set*(cap: VideoCapture, p: cint, v: cdouble):bool
+proc set*(cap: VideoCapture, p: cint, v: cdouble): bool
   {.importcpp: "#.set(@)", discardable.}
 
-proc read*(cap: VideoCapture, m: Mat):bool
+proc read*(cap: VideoCapture, m: Mat): bool
   {.importcpp: "#.read(@)", discardable.}
 
 proc release*(cap: VideoCapture)
-  {.importcpp, discardable.}
+  {.importcpp: "#.release()".}
 
 # for VideoWriter
 
@@ -48,6 +48,6 @@ proc write*(wr: VideoWriter, m: Mat)
   {.importcpp: "#.write(@)", discardable.}
 
 proc release*(wr: VideoWriter)
-  {.importcpp, discardable.}
+  {.importcpp: "#.release()".}
 
 {.pop.}

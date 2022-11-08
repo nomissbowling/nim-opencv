@@ -11,8 +11,8 @@ import opencv/[constants, mat, video]
 
 const
   test_path = currentSourcePath.splitFile.dir
-  test_qr = fmt"{test_path}/qr_nim.png"
-  test_qr_box = fmt"{test_path}/qr_box_template.png"
+  test_qr = fmt"{test_path}/qr_nim.png" # 4ch
+  test_qr_box = fmt"{test_path}/qr_box_template.png" # 4ch
   test_video_out = fmt"{test_path}/res/sample_video_out.mp4"
   test_video_in = fmt"{test_path}/res/sample_color_grad.m4v" # "_mp4_h264.avi"
 
@@ -35,7 +35,7 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
     im = newMat(height, width, img.type)
     tmp = newMat(h, w, img.type)
   im.rectangle(newRect(0, 0, width, height), bgc, -1) # fill: thickness=-1
-  img.resize(tmp, newSize(w, h), 0, 0, 4) # INTER_LANCZOS4
+  img.resize(tmp, newSize(w, h), 0, 0, INTER_LANCZOS4) # or INTER_LINEAR etc
 
   when false:
     var im_roi: Mat = newMat(im, newRect(0, 0, w, h))
@@ -44,7 +44,7 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
     tmp.copyTo(im(newRect(0, 0, w, h)))
 
   imshow(ttl, im)
-  result = im # imageData is not copied ?
+  result = im
 
 proc main()=
   echo fmt"OpenCV: {$getBuildInformation()}"
@@ -57,8 +57,9 @@ proc main()=
     if not fn.fileExists(): quit(fmt"[Error] Cannot find test file: {fn}")
 
   let
-    img_box = imread(test_qr_box, 11) # ignore loadImage iscolor=0
-    img_color = imread(test_qr, 11) # ignore loadImage iscolor=1
+    flg = ImFlags(IMREAD_COLOR, IMREAD_ANYDEPTH, IMREAD_LOAD_GDAL)
+    img_box = imread(test_qr_box, flg) # 4ch
+    img_color = imread(test_qr, flg) # 4ch
     lt = newPoint(img_box.cols.cint * 2, img_box.rows.cint + 5)
     rb = newPoint(lt.x + img_box.cols.cint, lt.y + img_box.rows.cint)
     red = newScalar(0, 0, 255, 0) # BGRA
@@ -89,19 +90,7 @@ proc main()=
     cnt = 0
 
   while true:
-    let
-      img_gray = imread(test_qr, 11) # ignore loadImage iscolor=0
-      img_laplace = img_gray.clone
-      img_canny = img_gray.clone
-    img_gray.Laplacian(img_laplace, img_gray.depth) # other opts
-    img_gray.Canny(img_canny, 0.8, 1.0, 3, false)
-
-    img_color.imShow("Color", 320, 240) # BGRA (default light gray)
-    img_rct.imShow("Rectangle", 320, 240, newScalar(32, 192, 240, 0)) # BGRA
-    img_laplace.imShow("Laplace", 320, 240, newScalar(64, 0, 0, 0)) # 1ch g000 LE
-    img_canny.imShow("Canny", 320, 240, newScalar(128, 0, 0, 0)) # 1ch g000 LE
-
-    var img_frm, img_dif, img_dst, img_tmp: Mat
+    var img_frm, img_gry, img_dif: Mat
     when not defined(nocamera):
       if not cap.read(img_frm):
         echo "No video/camera"
@@ -111,22 +100,36 @@ proc main()=
       # echo fmt"camera ({img_frm.rows}, {img_frm.cols})"
     else:
       img_frm = img_rct.clone
-    img_tmp = newMat(newSize(img_frm.cols, img_frm.rows), CV_8UC1)
-    img_frm.cvtColor(img_tmp, 6) # COLOR_BGR2GRAY (to 8UC1)
-    img_dst = img_frm.clone
-    img_tmp.cvtColor(img_dst, 8) # COLOR_GRAY2BGR (must to 8UC3)
-    img_dif = img_frm.clone
-    when not defined(nocamera):
-      let roi = newRect(160, 120, 320, 240)
-      img_frm(roi).absDiff(img_dst(roi), img_dif(roi))
-    else:
-      let roi = newRect(100, 30, 60, 60)
-      img_frm(roi).absDiff(img_color(roi), img_dif(roi))
-    img_frm.imShow("Src")
-    img_gray.imShow("Gray")
-    img_dif.imShow("Diff")
-    img_tmp = img_dst.imShow("Dst")
 
+    # img_gry = newMat(newSize(img_frm.cols, img_frm.rows), CV_8UC1) # needless
+    img_dif = img_frm.clone # all area before ROI
+    when not defined(nocamera):
+      img_frm.cvtColor(img_gry, BGR2GRAY) # to 8UC1
+      img_gry.cvtColor(img_gry, GRAY2BGR) # must revert to 8UC3
+      let roi = newRect(160, 120, 320, 240)
+    else:
+      img_frm.cvtColor(img_gry, BGRA2GRAY) # to 8UC1
+      img_gry.cvtColor(img_gry, GRAY2BGRA) # must revert to 8UC4
+      let roi = newRect(100, 30, 60, 60)
+      # img_frm(roi).absDiff(img_color(roi), img_dif(roi))
+    img_frm(roi).absDiff(img_gry(roi), img_dif(roi))
+
+    let
+      img_dst = img_gry.clone
+      img_laplace = img_gry.clone
+      img_canny = img_gry.clone
+    img_gry.Laplacian(img_laplace, img_gry.depth) # other opts
+    img_gry.Canny(img_canny, 0.8, 1.0, 3, false)
+
+    img_color.imShow("Color", 320, 240) # BGRA (default light gray)
+    img_rct.imShow("Rectangle", 320, 240, newScalar(32, 192, 240, 0)) # BGRA
+    img_laplace.imShow("Laplace", 320, 240, newScalar(64, 0, 0, 0)) # 1ch g000 LE
+    img_canny.imShow("Canny", 320, 240, newScalar(128, 0, 0, 0)) # 1ch g000 LE
+
+    img_frm.imShow("Src")
+    img_gry.imShow("Gray")
+    img_dif.imShow("Diff")
+    let img_tmp = img_dst.imShow("Dst") # output size adjusting
     wr.write(img_tmp)
     cnt += 1
 
