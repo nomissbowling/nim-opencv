@@ -36,17 +36,17 @@ iterator pairs*[T](v: Vector[T]): tuple[key: int, val: T] =
 proc newMat*(w, h, typ: cint, dat: cstring): Mat {.importcpp:"cv::Mat(cv::Size(#, #), #, #)", header: cv2hdr.}
 converter toMat*(img: ImgPtr):Mat {.importcpp:"cv::cvarrToMat(#)", header: cv2hdr.}
 converter toImg*(m: Mat):ImgPtr {.importcpp:"(void*)(new IplImage(#))", header: cv2hdr.}
-proc empty*(m: Mat):bool {.importcpp, header: cv2hdr.}
-proc depth*(m: Mat):cint {.importcpp, header: cv2hdr.}
-proc channels*(m: Mat):cint {.importcpp, header: cv2hdr.}
-proc newRect*[T](x, y, width, height: T): Rect[T] {.importcpp:"cv::Rect(@)".}
-proc total*(m: Mat): int {.importcpp:"#.total()".}
+proc empty*(m: Mat):bool {.importcpp:"#.empty()", header: cv2hdr.}
+proc depth*(m: Mat):cint {.importcpp:"#.depth()", header: cv2hdr.}
+proc channels*(m: Mat):cint {.importcpp:"#.channels()", header: cv2hdr.}
+proc newRect*[T](x, y, width, height: T): Rect[T] {.importcpp:"cv::Rect(@)", header: cv2hdr.}
+proc total*(m: Mat): int {.importcpp:"#.total()", header: cv2hdr.}
 
 converter toTRect*[T](r: Rect[T]): TRect = rect(r.x.cint, r.y.cint, r.width.cint, r.height.cint)
 converter toRect*(r: TRect): Rect[float] = newRect(r.x.float, r.y.float, r.width.float, r.height.float)
 converter toRect*[T](r: Rect[T]): Rect[float] = newRect(r.x.float, r.y.float, r.width.float, r.height.float)
 
-proc imshow*(title:cstring, m: Mat) {.importcpp:"cv::imshow(std::string(#), #)".}
+proc imshow*(title:cstring, m: Mat) {.importcpp:"cv::imshow(std::string(#), #)", header: cv2hdr.}
 proc waitKey*(delay: cint = 0): int {.importcpp:"cv::waitKey(#)", header:cv2hdr, discardable.}
 proc selectROI*(title:cstring, m:Mat, showCrosshair = true,
     fromCenter = false): Rect[float] {.importcpp:"cv::selectROI(std::string(#), @)", header: cv2hdr.}
@@ -57,3 +57,6 @@ proc imwrite*(fn:cstring, m: Mat):bool {.importcpp:"cv::imwrite(std::string(#), 
 # C++: Mat imread(const string& filename, int flags=1 )
 proc imread*(fn:cstring, flats: int = 11): Mat {.importcpp:"cv::imread(std::string(#), #)",
         header: cv2hdr.}
+
+proc getBuildInformation*(): cstring {.importcpp:"cv::getBuildInformation().c_str()".}
+

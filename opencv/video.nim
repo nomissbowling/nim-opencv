@@ -5,43 +5,50 @@ const
 
 import mat
 
+{.push header: cv2hdr.}
+
 type
-    VideoCapture* {.importcpp: "cv::VideoCapture", header: cv2hdr.} = object
+  VideoCapture* {.importcpp: "cv::VideoCapture".} = object
+
+  VideoWriter* {.importcpp: "cv::VideoWriter".} = object
+
+# for VideoCapture
 
 proc newVideoCapture*(fn: cstring): VideoCapture
-  {.importcpp: "cv::VideoCapture(std::string(#))", header: cv2hdr.}
+  {.importcpp: "cv::VideoCapture(std::string(#))".}
 
 proc newVideoCapture*(c: cint): VideoCapture
-  {.importcpp: "cv::VideoCapture(#)", header: cv2hdr.}
+  {.importcpp: "cv::VideoCapture(#)".}
 
-proc isOpened*(cap: VideoCapture):bool
-  {.importcpp, discardable, header: cv2hdr.}
+proc isOpened*(cap: VideoCapture): bool
+  {.importcpp: "#.isOpened()", discardable.}
 
-proc get*(cap: VideoCapture, p: cint):cdouble
-  {.importcpp: "#.get(@)", header: cv2hdr.}
+proc get*(cap: VideoCapture, p: cint): cdouble
+  {.importcpp: "#.get(@)".}
 
-proc set*(cap: VideoCapture, p: cint, v: cdouble):bool
-  {.importcpp: "#.set(@)", discardable, header: cv2hdr.}
+proc set*(cap: VideoCapture, p: cint, v: cdouble): bool
+  {.importcpp: "#.set(@)", discardable.}
 
-proc read*(cap: VideoCapture, m: Mat):bool
-  {.importcpp: "#.read(@)", discardable, header: cv2hdr.}
+proc read*(cap: VideoCapture, m: Mat): bool
+  {.importcpp: "#.read(@)", discardable.}
 
 proc release*(cap: VideoCapture)
-  {.importcpp, discardable, header: cv2hdr.}
+  {.importcpp: "#.release()".}
 
-type
-    VideoWriter* {.importcpp: "cv::VideoWriter", header: cv2hdr.} = object
+# for VideoWriter
 
 proc fourcc*(c1, c2, c3, c4: char): cint
-  {.importcpp: "cv::VideoWriter::fourcc(#, #, #, #)", header: cv2hdr.}
+  {.importcpp: "cv::VideoWriter::fourcc(#, #, #, #)".}
 
 proc newVideoWriter*(fn: cstring, fourcc: cint, fps: cdouble,
   w: cint, h: cint, isColor: bool=true): VideoWriter
-  {.importcpp: "cv::VideoWriter(std::string(#), #, #, cv::Size(#, #), #)",
-  header: cv2hdr.}
+  {.importcpp: "cv::VideoWriter(std::string(#), #, #, cv::Size(#, #), #)".}
 
 proc write*(wr: VideoWriter, m: Mat)
-  {.importcpp: "#.write(@)", discardable, header: cv2hdr.}
+  {.importcpp: "#.write(@)", discardable.}
 
 proc release*(wr: VideoWriter)
-  {.importcpp, discardable, header: cv2hdr.}
+  {.importcpp: "#.release()".}
+
+{.pop.}
+

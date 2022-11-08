@@ -1,3 +1,7 @@
+# OpenCV legacy C API is obsoleted.
+# Don't use branch cv3cv2_obsoleted.
+# Use branch cv4cv3_develop for both OpenCV4 and OpenCV3.
+#
 # camera_mat.nim is a rewrite version of camera.nim (tested on MinGW x64)
 #
 # compile with nim cpp --passC:-I<include_path> --passL:<libopencv_XXX.a>
@@ -62,6 +66,8 @@ proc imShow(img: ptr TArr, ttl: string, width: cint=640, height: cint=480,
   result = im # imageData is not copied ?
 
 proc main()=
+  echo fmt"OpenCV: {$getBuildInformation()}"
+
   for wn in @["Src", "Gray", "Diff", "Dst",
     "Color", "Rectangle", "Laplace", "Canny"]:
     discard namedWindow(cast[cstring](wn[0].unsafeAddr), WINDOW_AUTOSIZE)
