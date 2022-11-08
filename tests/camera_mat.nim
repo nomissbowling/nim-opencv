@@ -4,6 +4,7 @@
 # compile with nim cpp --passC:-I<include_path> --passL:<libopencv_XXX.a>
 # compile with -d:nocamera when no camera
 
+import macros
 import os
 import strformat, strutils
 # import opencv/[core, highgui, imgproc] # never import them OpenCV >= 4
@@ -45,6 +46,26 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
 
   imshow(ttl, im)
   result = im
+
+macro imgInf(args: varargs[untyped]): untyped = # not use 'vmat: static[Mat]'
+  # result = newNimNode(nnkStmtList, args)
+  result = newStmtList()
+  var blk = newStmtList() # define var r in block: (into newBlockStmt() later)
+  blk.add quote do:
+    var r {.inject.}: seq[string] = @[]
+  for arg in args:
+    let
+      vmat = arg
+      vname = toStrLit(vmat) # expect vmat is NimNode
+    blk.add quote do:
+      block:
+        let
+          name {.inject.} = `vname`
+          img {.inject.} = `vmat`
+        r.add(fmt"{name}: {img.rows} {img.cols} {img.depth} {img.channels}")
+  blk.add quote do:
+    r.join("\n")
+  result.add(newBlockStmt(blk))
 
 proc main()=
   echo fmt"OpenCV: {$getBuildInformation()}"
@@ -113,6 +134,8 @@ proc main()=
       let roi = newRect(100, 30, 60, 60)
       # img_frm(roi).absDiff(img_color(roi), img_dif(roi))
     img_frm(roi).absDiff(img_gry(roi), img_dif(roi))
+
+    # echo imgInf(img_frm, img_gry, img_dif)
 
     let
       img_dst = img_gry.clone
