@@ -96,11 +96,17 @@ proc newMat*(m: Mat): Mat
 proc newMat*(h, w, typ: cint): Mat
   {.importcpp: "cv::Mat(#, #, #)".}
 
+proc newMat*(h, w, typ: cint; col: Scalar): Mat
+  {.importcpp: "cv::Mat(#, #, #, #)".}
+
 proc newMat*(h, w, typ: cint; dat: cstring): Mat
   {.importcpp: "cv::Mat(#, #, #, #)".}
 
 proc newMat*(wh: Size; typ: cint): Mat
   {.importcpp: "cv::Mat(#, #)".}
+
+proc newMat*(wh: Size; typ: cint; col: Scalar): Mat
+  {.importcpp: "cv::Mat(#, #, #)".}
 
 proc newMat*(wh: Size; typ: cint; dat: cstring): Mat
   {.importcpp: "cv::Mat(#, #, #)".}

@@ -1,10 +1,39 @@
 # camera_mat.nim is a rewrite version of camera.nim (tested on MinGW x64)
 # It works good on OpenCV 3.4.12 and OpenCV 4.5.2
 #
-# compile with nim cpp --passC:-I<include_path> --passL:<libopencv_XXX.a>
-# compile with -d:nocamera when no camera
+# nim cpp -d:release -d:opencv3 -r tests/camera_mat
+# nim cpp -d:release -d:opencv4 -r tests/camera_mat
+# nim cpp -d:release -d:opencv3 -d:nocamera -r tests/camera_mat
+# nim cpp -d:release -d:opencv4 -d:nocamera -r tests/camera_mat
+# nim cpp -d:release --passC:-I<include_path> --passL:<libopencv_XXX.a> -r camera_mat
+
+import opencv/libautolinker
+embedLinkPragma(@[], @[]) # auto search
+# embedLinkPragma(@["-I<include_path>"], @["./lib"]) # directly
+# embedLinkPragma(@[], @["."]) # lib path only
 
 import macros
+
+macro imgInf(args: varargs[untyped]): untyped = # not use 'vmat: static[Mat]'
+  # result = newNimNode(nnkStmtList, args)
+  result = newStmtList()
+  var blk = newStmtList() # define var r in block: (into newBlockStmt() later)
+  blk.add quote do:
+    var r {.inject.}: seq[string] = @[]
+  for arg in args:
+    let
+      vmat = arg
+      vname = toStrLit(vmat) # expect vmat is NimNode
+    blk.add quote do:
+      block:
+        let
+          name {.inject.} = `vname`
+          img {.inject.} = `vmat`
+        r.add(fmt"{name}: {img.rows} {img.cols} {img.depth} {img.channels}")
+  blk.add quote do:
+    r.join("\n")
+  result.add(newBlockStmt(blk))
+
 import os
 import strformat, strutils
 # import opencv/[core, highgui, imgproc] # never import them OpenCV >= 4
@@ -33,9 +62,9 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
     w = img.cols.cint * height div img.rows.cint
     h = height
   let
-    im = newMat(height, width, img.type)
+    im = newMat(height, width, img.type, bgc)
     tmp = newMat(h, w, img.type)
-  im.rectangle(newRect(0, 0, width, height), bgc, -1) # fill: thickness=-1
+  # im.rectangle(newRect(0, 0, width, height), bgc, -1) # fill: thickness=-1
   img.resize(tmp, newSize(w, h), 0, 0, INTER_LANCZOS4) # or INTER_LINEAR etc
 
   when false:
@@ -47,28 +76,18 @@ proc imShow(img: Mat, ttl: string, width: cint=640, height: cint=480,
   imshow(ttl, im)
   result = im
 
-macro imgInf(args: varargs[untyped]): untyped = # not use 'vmat: static[Mat]'
-  # result = newNimNode(nnkStmtList, args)
-  result = newStmtList()
-  var blk = newStmtList() # define var r in block: (into newBlockStmt() later)
-  blk.add quote do:
-    var r {.inject.}: seq[string] = @[]
-  for arg in args:
-    let
-      vmat = arg
-      vname = toStrLit(vmat) # expect vmat is NimNode
-    blk.add quote do:
-      block:
-        let
-          name {.inject.} = `vname`
-          img {.inject.} = `vmat`
-        r.add(fmt"{name}: {img.rows} {img.cols} {img.depth} {img.channels}")
-  blk.add quote do:
-    r.join("\n")
-  result.add(newBlockStmt(blk))
+proc pickNlines(buf: string, n: int): string =
+  var
+    r: seq[string] = @[]
+    i: int = 0
+  for l in buf.split('\x0A'):
+    if i >= n: break
+    r.add(l)
+    i += 1
+  result = r.join("\n")
 
 proc main()=
-  echo fmt"OpenCV: {$getBuildInformation()}"
+  echo fmt"OpenCV: {($getBuildInformation()).pickNlines(15)}"
 
   for wn in @["Src", "Gray", "Diff", "Dst",
     "Color", "Rectangle", "Laplace", "Canny"]:
