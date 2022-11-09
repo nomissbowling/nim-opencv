@@ -5,7 +5,7 @@
 # nim cpp -d:release -d:opencv4 -r tests/camera_mat
 # nim cpp -d:release -d:opencv3 -d:nocamera -r tests/camera_mat
 # nim cpp -d:release -d:opencv4 -d:nocamera -r tests/camera_mat
-# nim cpp -d:release --passC:-I<include_path> --passL:<libopencv_XXX.a> -r camera_mat
+# nim cpp -d:release --passC:-I<include_path> --passL:<libopencv_XXX.a> -r tests/camera_mat
 
 import opencv/libautolinker
 embedLinkPragma(@[], @[]) # auto search

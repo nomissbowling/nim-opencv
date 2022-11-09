@@ -51,7 +51,7 @@ else:
 
 when defined(windows):
   const inc_root = fmt"-IC:/{base_root}/include"
-  const lib_root = fmt"."
+  const lib_root = fmt"C:/{base_root}/x64/mingw/lib"
   const dll_ext = "dll"
 elif defined(macosx):
   const inc_root = fmt"-I/usr/local/include/{base_root}"
