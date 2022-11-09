@@ -11,13 +11,13 @@ import os, strformat, strutils
 
 macro libautolinker*(incs, libs: static[seq[string]]): untyped =
   result = newStmtList()
-  when false:
+  when true:
     for inc in incs:
-      result.add(newTree(nnkPragma,
-        newTree(nnkExprColonExpr, newIdentNode("passC"), newStrLitNode(inc))))
+      result.add(nnkPragma.newTree(
+        nnkExprColonExpr.newTree("passC".newIdentNode, inc.newStrLitNode)))
     for lib in libs:
-      result.add(newTree(nnkPragma,
-        newTree(nnkExprColonExpr, newIdentNode("passL"), newStrLitNode(lib))))
+      result.add(nnkPragma.newTree(
+        nnkExprColonExpr.newTree("passL".newIdentNode, lib.newStrLitNode)))
   else:
     for inc in incs:
       result.add quote do:
@@ -50,15 +50,15 @@ else:
   const base_root = "opencv5"
 
 when defined(windows):
-  const inc_root = fmt"-IC:/{base_root}/include"
+  const inc_root = fmt"C:/{base_root}/include"
   const lib_root = fmt"C:/{base_root}/x64/mingw/lib"
   const dll_ext = "dll"
 elif defined(macosx):
-  const inc_root = fmt"-I/usr/local/include/{base_root}"
+  const inc_root = fmt"/usr/local/include/{base_root}"
   const lib_root = fmt"/usr/local/lib/{base_root}"
   const dll_ext = "dylib"
 else:
-  const inc_root = fmt"-I/usr/local/include/{base_root}"
+  const inc_root = fmt"/usr/local/include/{base_root}"
   const lib_root = fmt"/usr/local/lib/{base_root}"
   const dll_ext = "so"
 
@@ -82,10 +82,10 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
 
   var libs: seq[string] = @[]
   for world in worlds:
-    searchLib(libs, world, paths)
+    libs.searchLib(world, paths)
   if libs.len == 0:
     for key in keys:
-      searchLib(libs, key, paths)
+      libs.searchLib(key, paths)
 
   # echo fmt"incs: {incs}{'\n'}libs: {libs}"
 
@@ -95,18 +95,17 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
   # #   libautolinker(incs, libs)
   result = newStmtList()
   var
-    bracketInc = newTree(nnkBracket) # newTree(nnkBracket, child, child, ...)
-    bracketLib = newTree(nnkBracket) # newTree(nnkBracket, child, child, ...)
+    bracketInc = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
+    bracketLib = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
   # echo incs
   for inc in incs:
     echo inc
-    bracketInc.add(newStrLitNode(inc))
+    bracketInc.add((fmt"-I{inc}").newStrLitNode)
   # echo libs
   for lib in libs:
     echo lib
-    bracketLib.add(newStrLitNode(lib))
+    bracketLib.add(lib.newStrLitNode)
   let
-    seqInc = newTree(nnkPrefix, newIdentNode("@"), bracketInc)
-    seqLib = newTree(nnkPrefix, newIdentNode("@"), bracketLib)
-  result.add(newTree(nnkCall,
-    newIdentNode("libautolinker"), seqInc, seqLib)) # now static
+    seqInc = nnkPrefix.newTree("@".newIdentNode, bracketInc)
+    seqLib = nnkPrefix.newTree("@".newIdentNode, bracketLib)
+  result.add("libautolinker".newCall(seqInc, seqLib)) # now static

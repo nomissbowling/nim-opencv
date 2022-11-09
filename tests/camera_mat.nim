@@ -9,7 +9,7 @@
 
 import opencv/libautolinker
 embedLinkPragma(@[], @[]) # auto search
-# embedLinkPragma(@["-I<include_path>"], @["./lib"]) # directly
+# embedLinkPragma(@["./include"], @["./lib"]) # directly serch paths priority 0
 # embedLinkPragma(@[], @["."]) # lib path only
 
 import macros
