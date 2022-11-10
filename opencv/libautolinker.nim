@@ -46,20 +46,27 @@ when defined(opencv3):
   const base_root = "opencv3"
 elif defined(opencv4):
   const base_root = "opencv4"
-else:
+elif defined(opencv5):
   const base_root = "opencv5"
+elif defined(opencv6):
+  const base_root = "opencv6"
+else:
+  const base_root = "."
+
+template selPath(b, p: string): string =
+  if b == ".": b else: p
 
 when defined(windows):
-  const inc_root = fmt"C:/{base_root}/include"
-  const lib_root = fmt"C:/{base_root}/x64/mingw/lib"
+  const inc_root = base_root.selPath(fmt"C:/{base_root}/include")
+  const lib_root = base_root.selPath(fmt"C:/{base_root}/x64/mingw/lib")
   const dll_ext = "dll"
 elif defined(macosx):
-  const inc_root = fmt"/usr/local/include/{base_root}"
-  const lib_root = fmt"/usr/local/lib/{base_root}"
+  const inc_root = base_root.selPath(fmt"/usr/local/include/{base_root}")
+  const lib_root = base_root.selPath(fmt"/usr/local/lib/{base_root}")
   const dll_ext = "dylib"
 else:
-  const inc_root = fmt"/usr/local/include/{base_root}"
-  const lib_root = fmt"/usr/local/lib/{base_root}"
+  const inc_root = base_root.selPath(fmt"/usr/local/include/{base_root}")
+  const lib_root = base_root.selPath(fmt"/usr/local/lib/{base_root}")
   const dll_ext = "so"
 
 proc searchLib(libs: var seq[string], key: string, paths: seq[string]) =
@@ -99,11 +106,11 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
     bracketLib = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
   # echo incs
   for inc in incs:
-    echo inc
+    echo fmt"inc found: {inc}"
     bracketInc.add((fmt"-I{inc}").newStrLitNode)
   # echo libs
   for lib in libs:
-    echo lib
+    echo fmt"lib found: {lib}"
     bracketLib.add(lib.newStrLitNode)
   let
     seqInc = nnkPrefix.newTree("@".newIdentNode, bracketInc)
