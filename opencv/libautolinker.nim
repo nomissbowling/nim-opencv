@@ -14,10 +14,10 @@ macro libautolinker*(incs, libs: static[seq[string]]): untyped =
   when true:
     for inc in incs:
       result.add(nnkPragma.newTree(
-        nnkExprColonExpr.newTree("passC".newIdentNode, inc.newStrLitNode)))
+        newColonExpr("passC".ident, inc.newStrLitNode)))
     for lib in libs:
       result.add(nnkPragma.newTree(
-        nnkExprColonExpr.newTree("passL".newIdentNode, lib.newStrLitNode)))
+        newColonExpr("passL".ident, lib.newStrLitNode)))
   else:
     for inc in incs:
       result.add quote do:
@@ -101,9 +101,7 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
   # # result.add quote do:
   # #   libautolinker(incs, libs)
   result = newStmtList()
-  var
-    bracketInc = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
-    bracketLib = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
+  var bracketInc = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
   # echo incs
   for inc in incs:
     echo fmt"inc found: {inc}"
@@ -111,8 +109,5 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
   # echo libs
   for lib in libs:
     echo fmt"lib found: {lib}"
-    bracketLib.add(lib.newStrLitNode)
-  let
-    seqInc = nnkPrefix.newTree("@".newIdentNode, bracketInc)
-    seqLib = nnkPrefix.newTree("@".newIdentNode, bracketLib)
-  result.add("libautolinker".newCall(seqInc, seqLib)) # now static
+  let seqInc = bracketInc.prefix("@")
+  result.add("libautolinker".newCall(seqInc, libs.newLit)) # now static
