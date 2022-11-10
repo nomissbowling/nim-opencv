@@ -67,8 +67,32 @@ type
     r* {.importc.}: T
     a* {.importc.}: T
 
-proc newScalar*[T: float or int](b, g, r, a: T): Scalar[T]
+proc newScalar*[T: float or int](b, g, r: T; a: T=0): Scalar[T]
   {.importcpp: "cv::Scalar(@)".}
+
+type
+  RotatedRect* {.importcpp: "cv::RotatedRect".} = object
+    center* {.importc.}: Point[float32]
+    size* {.importc.}: Size[float32]
+    angle* {.importc.}: float32
+
+proc newRotatedRect*(): RotatedRect
+  {.importcpp: "cv::RotatedRect(@)".}
+
+proc newRotatedRect*(center: Point[float32]; size: Size[float32]; angle: float32): RotatedRect
+  {.importcpp: "cv::RotatedRect(@)".}
+
+proc newRotatedRect*(pt1, pt2, pt3: Point[float32]): RotatedRect
+  {.importcpp: "cv::RotatedRect(@)".}
+
+proc points*(rr: RotatedRect; pts: ptr array[4, Point[float32]])
+  {.importcpp: "#.points(#)".}
+
+proc boundingRect*(rr: RotatedRect): Rect[int] # convert to int
+  {.importcpp: "#.boundingRect()".}
+
+proc boundingRect2f*(rr: RotatedRect): Rect[float32] # as float32
+  {.importcpp: "#.boundingRect2f()".}
 
 type
   Mat* {.importcpp: "cv::Mat".} = object
@@ -128,6 +152,9 @@ proc channels*(m: Mat): cint
 
 proc total*(m: Mat): int
   {.importcpp: "#.total()".}
+
+proc line*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=8; shift: cint=0) # LINE_8
+  {.importcpp: "cv::line(#, #, #, #, #, #, #)".}
 
 proc rectangle*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=8; shift: cint=0) # LINE_8
   {.importcpp: "cv::rectangle(#, #, #, #, #, #, #)".}

@@ -163,6 +163,24 @@ proc main()=
     img_gry.Laplacian(img_laplace, img_gry.depth) # other opts
     img_gry.Canny(img_canny, 0.8, 1.0, 3, false)
 
+    when not defined(nocamera):
+      let
+        rrcenter = newPoint[float32](320.0, 240.0)
+        rrsize = newSize[float32](160.0, 120.0)
+        rrangle = -15.0'f32 # angle < 0 rotate left
+    else:
+      let
+        rrcenter = newPoint[float32](100.0, 100.0)
+        rrsize = newSize[float32](100.0, 50.0)
+        rrangle = 60.0'f32 # angle > 0 rotate right
+    var vertices: array[4, Point[float32]]
+    let rr = newRotatedRect(rrcenter, rrsize, rrangle)
+    rr.points(vertices.addr)
+    for i in 0..<vertices.len:
+      img_dst.line(vertices[i], vertices[(i+1) mod 4], newScalar(0, 255, 0), 2)
+    let br = rr.boundingRect
+    img_dst.rectangle(br, newScalar(255, 0, 0), 2)
+
     img_color.imShow("Color", 320, 240) # BGRA (default light gray)
     img_rct.imShow("Rectangle", 320, 240, newScalar(32, 192, 240, 0)) # BGRA
     img_laplace.imShow("Laplace", 320, 240, newScalar(64, 0, 0, 0)) # 1ch g000 LE
