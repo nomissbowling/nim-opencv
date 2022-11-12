@@ -108,6 +108,9 @@ when usestdnim == "true":
   proc minAreaRect*[T](vp: ptr StdVector[Point[T]]): RotatedRect
     {.importcpp: "cv::minAreaRect(*(#))".}
 
+  template minAreaRect*[T](vp: StdVector[Point[T]]): RotatedRect =
+    vp.addr.minAreaRect
+
 type
   Mat* {.importcpp: "cv::Mat".} = object
     flags*: int
@@ -179,13 +182,16 @@ proc total*(m: Mat): int
 # proc `()`*(src: Mat; rng: Range): Mat
 #   {.importcpp: "#(#)".}
 
-proc line*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=8; shift: cint=0) # LINE_8
+proc putText*(m: Mat; text: cstring; org: Point; fontFace: cint; fontScale: cdouble; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; bottomLeftOrigin: bool=false)
+  {.importcpp: "cv::putText(#, std::string(#), #, #, #, #, #, #, #)".}
+
+proc line*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; shift: cint=0)
   {.importcpp: "cv::line(#, #, #, #, #, #, #)".}
 
-proc rectangle*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=8; shift: cint=0) # LINE_8
+proc rectangle*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; shift: cint=0)
   {.importcpp: "cv::rectangle(#, #, #, #, #, #, #)".}
 
-proc rectangle*(m: Mat; rct: Rect; col: Scalar; thickness: cint=1; lineType: cint=8; shift: cint=0) # LINE_8
+proc rectangle*(m: Mat; rct: Rect; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; shift: cint=0)
   {.importcpp: "cv::rectangle(#, #, #, #, #, #)".}
 
 proc absdiff*(src1: Mat; src2: Mat; dst: Mat)

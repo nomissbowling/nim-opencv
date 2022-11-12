@@ -498,3 +498,22 @@ const
   INTER_CUBIC* = 2
   INTER_AREA* = 3
   INTER_LANCZOS4* = 4
+
+#
+
+const # LineTypes
+  FILLED* = -1
+  LINE_4* = 4       # 4-connected line
+  LINE_8* = 8       # 8-connected line
+  LINE_AA* = 16     # antialiased line
+
+const # HersheyFonts
+  FONT_HERSHEY_SIMPLEX* = 0           # normal size sans-serif font
+  FONT_HERSHEY_PLAIN* = 1             # small size sans-serif font
+  FONT_HERSHEY_DUPLEX* = 2            # normal size sans-serif font (more complex than FONT_HERSHEY_SIMPLEX)
+  FONT_HERSHEY_COMPLEX* = 3           # normal size serif font
+  FONT_HERSHEY_TRIPLEX* = 4           # normal size serif font (more complex than FONT_HERSHEY_COMPLEX)
+  FONT_HERSHEY_COMPLEX_SMALL* = 5     # smaller version of FONT_HERSHEY_COMPLEX
+  FONT_HERSHEY_SCRIPT_SIMPLEX* = 6    # hand-writing style font
+  FONT_HERSHEY_SCRIPT_COMPLEX* = 7    # more complex variant of FONT_HERSHEY_SCRIPT_SIMPLEX
+  FONT_ITALIC* = 16                   # flag for italic font

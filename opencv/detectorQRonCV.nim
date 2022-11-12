@@ -53,4 +53,7 @@ when usestdnim == "true":
   proc detectAndDecodeMulti*(d: QRCodeDetector; m: Mat; decinfs: ptr StdVector[StdString]; pts: ptr StdVector[Point[float32]]; straight: ptr StdVector[Mat]): bool
     {.importcpp: "#.detectAndDecodeMulti(#, *(#), *(#), *(#))".}
 
+  template detectAndDecodeMulti*(d: QRCodeDetector; m: Mat; decinfs: StdVector[StdString]; pts: StdVector[Point[float32]]; straight: StdVector[Mat]): bool =
+    d.detectAndDecodeMulti(m, decinfs.addr, pts.addr, straight.addr)
+
 {.pop.} # cv2hdr

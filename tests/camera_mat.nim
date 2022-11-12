@@ -54,7 +54,13 @@ when usestdnim == "true":
       infs = newStdVector[StdString]() # must create instance
       pts = newStdVector[Point[float32]]() # must create instance
       straight = newStdVector[Mat]() # must create instance
-    let result = detector.detectAndDecodeMulti(gry, infs.addr, pts.addr, straight.addr)
+    let
+      decNone = newScalar(0, 0, 255)
+      decNoneOut = newScalar(255, 0, 255)
+      decOK = newScalar(0, 255, 0)
+      decOKOut = newScalar(255, 255, 0)
+      decTxt = newScalar(0, 255, 255)
+      result = detector.detectAndDecodeMulti(gry, infs, pts, straight)
     if not result: return
     echo fmt"detected QRs: {infs.size}"
     for i, di in infs:
@@ -62,12 +68,18 @@ when usestdnim == "true":
       var vp = newStdVector[Point[float32]]() # initialize or clear in the loop
       if (i + 1) * 4 <= pts.size.int: # N * 4
         for j in 0..<4: vp.pushBack(pts[(i * 4 + j).clong])
-      for j in 0..<vp.size.int:
-        gry.line(vp[j.clong], vp[(j + 1).clong mod 4], newScalar(0, 255, 0), 2)
       let
-        rr = vp.addr.minAreaRect
+        bad = $di[] == ""
+        col = if bad: decNone else: decOK
+        colOut = if bad: decNoneOut else: decOKOut
+        rr = vp.minAreaRect
         br = rr.boundingRect
-      gry.rectangle(br, newScalar(255, 0, 0,), 2)
+      for j in 0..<vp.size.int:
+        gry.line(vp[j.clong], vp[(j + 1).clong mod 4], col, 2)
+      gry.rectangle(br, colOut, 2)
+      if not bad:
+        gry.putText(di[].cStr, vp[3],
+          FONT_HERSHEY_SIMPLEX, 2.0, decTxt, 2, LINE_8, false)
 
 const
   test_path = currentSourcePath.splitFile.dir
