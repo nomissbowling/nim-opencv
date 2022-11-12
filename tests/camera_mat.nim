@@ -1,8 +1,12 @@
 # camera_mat.nim is a rewrite version of camera.nim (tested on MinGW x64)
 # It works good on OpenCV 3.4.12 and OpenCV 4.5.2
 #
+# variety of command options
+#   -d:usestdnim requires https://github.com/nomissbowling/stdnim (in develop)
+# nim cpp -d:release -d:opencv -d:usestdnim -r tests/camera_mat
 # nim cpp -d:release -d:opencv3 -r tests/camera_mat
 # nim cpp -d:release -d:opencv4 -r tests/camera_mat
+# nim cpp -d:release -d:opencv -d:usestdnim -d:nocamera -r tests/camera_mat
 # nim cpp -d:release -d:opencv3 -d:nocamera -r tests/camera_mat
 # nim cpp -d:release -d:opencv4 -d:nocamera -r tests/camera_mat
 # nim cpp -d:release --passC:-I<include_path> --passL:<libopencv_XXX.a> -r tests/camera_mat
@@ -38,6 +42,32 @@ import os
 import strformat, strutils
 # import opencv/[core, highgui, imgproc] # never import them OpenCV >= 4
 import opencv/[constants, mat, video]
+
+const usestdnim {.strdefine.} = "" # see also detectorQRonCV.nim
+when usestdnim == "true":
+  import stdnim # clone https://github.com/nomissbowling/stdnim (in develop)
+  import opencv/detectorQRonCV # require stdnim
+  let detector = newQRCodeDetector()
+
+  proc detectQRonCV(gry: var Mat) =
+    var
+      infs = newStdVector[StdString]() # must create instance
+      pts = newStdVector[Point[float32]]() # must create instance
+      straight = newStdVector[Mat]() # must create instance
+    let result = detector.detectAndDecodeMulti(gry, infs.addr, pts.addr, straight.addr)
+    if not result: return
+    echo fmt"detected QRs: {infs.size}"
+    for i, di in infs:
+      echo fmt"[{i}] [{$di[]}]" # pts: N * 4p straight: N * Mat gray (0 or 255)
+      var vp = newStdVector[Point[float32]]() # initialize or clear in the loop
+      if (i + 1) * 4 <= pts.size.int: # N * 4
+        for j in 0..<4: vp.pushBack(pts[(i * 4 + j).clong])
+      for j in 0..<vp.size.int:
+        gry.line(vp[j.clong], vp[(j + 1).clong mod 4], newScalar(0, 255, 0), 2)
+      let
+        rr = vp.addr.minAreaRect
+        br = rr.boundingRect
+      gry.rectangle(br, newScalar(255, 0, 0,), 2)
 
 const
   test_path = currentSourcePath.splitFile.dir
@@ -163,16 +193,17 @@ proc main()=
     img_gry.Laplacian(img_laplace, img_gry.depth) # other opts
     img_gry.Canny(img_canny, 0.8, 1.0, 3, false)
 
+    # test RotatedRect
     when not defined(nocamera):
       let
         rrcenter = newPoint[float32](320.0, 240.0)
         rrsize = newSize[float32](160.0, 120.0)
-        rrangle = -15.0'f32 # angle < 0 rotate left
+        rrangle = -(cnt mod 360).float32 # -15.0'f32 # angle < 0 rotate left
     else:
       let
         rrcenter = newPoint[float32](100.0, 100.0)
         rrsize = newSize[float32](100.0, 50.0)
-        rrangle = 60.0'f32 # angle > 0 rotate right
+        rrangle = (cnt mod 360).float32 # 60.0'f32 # angle > 0 rotate right
     var vertices: array[4, Point[float32]]
     let rr = newRotatedRect(rrcenter, rrsize, rrangle)
     rr.points(vertices.addr)
@@ -180,6 +211,13 @@ proc main()=
       img_dst.line(vertices[i], vertices[(i+1) mod 4], newScalar(0, 255, 0), 2)
     let br = rr.boundingRect
     img_dst.rectangle(br, newScalar(255, 0, 0), 2)
+
+    # test OpenCV QR detector (low accuracy) nimQR on ZBar is high quality one.
+    # require https://github.com/nomissbowling/stdnim (in develop)
+    when usestdnim == "true":
+      if getVersionMajor() >= 5 or
+        (getVersionMajor() == 4 and getVersionMinor() >= 3):
+        detectQRonCV(img_gry)
 
     img_color.imShow("Color", 320, 240) # BGRA (default light gray)
     img_rct.imShow("Rectangle", 320, 240, newScalar(32, 192, 240, 0)) # BGRA

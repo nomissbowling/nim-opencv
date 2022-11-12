@@ -7,7 +7,7 @@
 include dynlibimporter
 
 import macros
-import os, strformat, strutils
+import os, strformat
 
 macro libautolinker*(incs, libs: static[seq[string]]): untyped =
   result = newStmtList()
@@ -42,7 +42,14 @@ const
 # /usr/local/bin
 # etc
 
-when defined(opencv3):
+when defined(opencv):
+  const opencv {.strdefine.} = "" # see also dynlibimporter.nim
+  when opencv == "true" or opencv == "":
+    const versionOpenCV = "4" # default value if not set -d:opencv="<int>"
+  else:
+    const versionOpenCV = opencv
+  const base_root = fmt"opencv{versionOpenCV}"
+elif defined(opencv3):
   const base_root = "opencv3"
 elif defined(opencv4):
   const base_root = "opencv4"
@@ -82,10 +89,12 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
   var incs: seq[string] = @[]
   for inc in base_incs: incs.add(inc)
   incs.add(inc_root)
+  echo fmt"search incs from: {incs}"
 
   var paths: seq[string] = @[]
   for path in base_libs: paths.add(path)
   paths.add(lib_root)
+  echo fmt"serach libs from: {paths}"
 
   var libs: seq[string] = @[]
   for world in worlds:
@@ -104,10 +113,10 @@ macro embedLinkPragma*(base_incs, base_libs: static[seq[string]]): untyped =
   var bracketInc = nnkBracket.newTree # nnkBracket.newTree(child, child, ...)
   # echo incs
   for inc in incs:
-    echo fmt"inc found: {inc}"
+    echo fmt"inc add: {inc}"
     bracketInc.add((fmt"-I{inc}").newStrLitNode)
   # echo libs
   for lib in libs:
-    echo fmt"lib found: {lib}"
+    echo fmt"lib add: {lib}"
   let seqInc = bracketInc.prefix("@")
   result.add("libautolinker".newCall(seqInc, libs.newLit)) # now static

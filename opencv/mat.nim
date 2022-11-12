@@ -1,5 +1,10 @@
 # compile with --passC:-I<include_path> --passL:>libopencv_XXX.a>
 #{.passL:"-lopencv_core".} # not embed
+
+const usestdnim {.strdefine.} = "" # see also camera_mat.nim
+when usestdnim == "true":
+  import stdnim # clone https://github.com/nomissbowling/stdnim (in develop)
+
 const
   cv2hdr = "<opencv2/opencv.hpp>"
 
@@ -19,7 +24,7 @@ proc `[]`*[T](this: Vector[T]|var Vector[T]; key: int): T
 proc len*[T](this: Vector[T]|var Vector[T]): int
   {.importcpp: "#.size()".}
 
-proc push*[T](this: var Vector[T])
+proc push*[T](this: var Vector[T], val: T)
   {.importcpp: "#.push_back(#)".}
 
 iterator items*[T](v: Vector[T]): T =
@@ -94,6 +99,15 @@ proc boundingRect*(rr: RotatedRect): Rect[int] # convert to int
 proc boundingRect2f*(rr: RotatedRect): Rect[float32] # as float32
   {.importcpp: "#.boundingRect2f()".}
 
+proc minAreaRect*[T](vp: Vector[Point[T]]): RotatedRect
+  {.importcpp: "cv::minAreaRect(#)".}
+
+when usestdnim == "true":
+  # TODO: now use ptr StdVector[T] for all vector<T> interfaces
+
+  proc minAreaRect*[T](vp: ptr StdVector[Point[T]]): RotatedRect
+    {.importcpp: "cv::minAreaRect(*(#))".}
+
 type
   Mat* {.importcpp: "cv::Mat".} = object
     flags*: int
@@ -153,6 +167,18 @@ proc channels*(m: Mat): cint
 proc total*(m: Mat): int
   {.importcpp: "#.total()".}
 
+# proc at*(m: Mat; i0: cint): cint # TODO: any type (Mat cint cfloat cdouble)
+#   {.importcpp: "#.at(#)".}
+
+# proc at*(m: Mat; r, c: cint): cint # TODO: any type (Mat cint cfloat cdouble)
+#   {.importcpp: "#.at(#, #)".}
+
+# proc at*(m: Mat; i0, i1, i2: cint): cint # TODO: any type (Mat cint cfloat cdouble)
+#   {.importcpp: "#.at(#, #, #)".}
+
+# proc `()`*(src: Mat; rng: Range): Mat
+#   {.importcpp: "#(#)".}
+
 proc line*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=8; shift: cint=0) # LINE_8
   {.importcpp: "cv::line(#, #, #, #, #, #, #)".}
 
@@ -205,7 +231,7 @@ proc waitKey*(delay: cint=0): int
 proc selectROI*(title: cstring, m:Mat, showCrosshair=true, fromCenter=false): Rect[float]
   {.importcpp: "cv::selectROI(std::string(#), @)".}
 
-proc selectROIs*(title: cstring, m:Mat, boxs:Vector[Rect[cint]], showCrosshair=true, fromCenter=false)
+proc selectROIs*(title: cstring, m:Mat, boxs: Vector[Rect[cint]], showCrosshair=true, fromCenter=false)
   {.importcpp: "cv::selectROIs(std::string(#), @)".}
 
 proc imwrite*(fn: cstring, m: Mat): bool
@@ -217,5 +243,14 @@ proc imread*(fn: cstring, flags: int=ImFlags(IMREAD_COLOR, IMREAD_ANYDEPTH, IMRE
 
 proc getBuildInformation*(): cstring
   {.importcpp: "cv::getBuildInformation().c_str()".}
+
+proc getVersionMajor*(): cint
+  {.importcpp: "cv::getVersionMajor()".}
+
+proc getVersionMinor*(): cint
+  {.importcpp: "cv::getVersionMinor()".}
+
+proc getVersionRevision*(): cint
+  {.importcpp: "cv::getVersionRevision()".}
 
 {.pop.} # cv2hdr

@@ -15,12 +15,23 @@ proc getDllName(key: string; ext: string; path: string=".";
   response: bool=true): string =
   # TODO: more smart
   var vers: seq[string];
-  when defined(opencv3):
-   let vmajor = 3
+  when defined(opencv):
+    const opencv {.strdefine.} = "" # see also libautolinker.nim
+    when opencv == "true" or opencv == "":
+      const nVersionOpenCV = 4 # default value if not set -d:opencv="<int>"
+    else:
+      const nVersionOpenCV = parseInt(opencv)
+    let vmajor = nVersionOpenCV
+  elif defined(opencv3):
+    let vmajor = 3
   elif defined(opencv4):
-   let vmajor = 4
+    let vmajor = 4
+  elif defined(opencv5):
+    let vmajor = 5
+  elif defined(opencv6):
+    let vmajor = 6
   else:
-   let vmajor = 5
+    let vmajor = 0 # default value if not set anything (nothing may be matched)
   for vminor in countdown(9, 0):
     for vsub in countdown(20, 0):
       vers.add(fmt"{vmajor}{vminor}{vsub}")
