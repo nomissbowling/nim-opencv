@@ -62,24 +62,24 @@ when usestdnim == "true":
       decTxt = newScalar(0, 255, 255)
       result = detector.detectAndDecodeMulti(gry, infs, pts, straight)
     if not result: return
-    echo fmt"detected QRs: {infs.size}"
+    # echo fmt"detected QRs: {infs.size}"
     for i, di in infs:
-      echo fmt"[{i}] [{$di[]}]" # pts: N * 4p straight: N * Mat gray (0 or 255)
+      # echo fmt"[{i}] [{$di}]" # pts: N * 4p straight: N * Mat gray (0 or 255)
       var vp = newStdVector[Point[float32]]() # initialize or clear in the loop
       if (i + 1) * 4 <= pts.size.int: # N * 4
-        for j in 0..<4: vp.pushBack(pts[(i * 4 + j).clong])
+        for j in 0..<4: vp.pushBack(pts[(i * 4 + j)])
       let
-        bad = $di[] == ""
+        ds = $di
+        bad = ds == ""
         col = if bad: decNone else: decOK
         colOut = if bad: decNoneOut else: decOKOut
         rr = vp.minAreaRect
         br = rr.boundingRect
-      for j in 0..<vp.size.int:
-        gry.line(vp[j.clong], vp[(j + 1).clong mod 4], col, 2)
+      for j in 0..<vp.size.int: gry.line(vp[j], vp[(j + 1) mod 4], col, 2)
       gry.rectangle(br, colOut, 2)
       if not bad:
-        gry.putText(di[].cStr, vp[3],
-          FONT_HERSHEY_SIMPLEX, 2.0, decTxt, 2, LINE_8, false)
+        gry.putText(ds, vp[3],
+          FONT_HERSHEY_SIMPLEX, 2.0, decTxt, 2, LINE_AA, false)
 
 const
   test_path = currentSourcePath.splitFile.dir

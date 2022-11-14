@@ -185,6 +185,9 @@ proc total*(m: Mat): int
 proc putText*(m: Mat; text: cstring; org: Point; fontFace: cint; fontScale: cdouble; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; bottomLeftOrigin: bool=false)
   {.importcpp: "cv::putText(#, std::string(#), #, #, #, #, #, #, #)".}
 
+template putText*(m: Mat; text: string; org: Point; fontFace: cint; fontScale: cdouble; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; bottomLeftOrigin: bool=false) =
+  putText(m, text[0].unsafeAddr, org, fontFace, fontScale, col, thickness, lineType, bottomLeftOrigin)
+
 proc line*(m: Mat; pt1, pt2: Point; col: Scalar; thickness: cint=1; lineType: cint=LINE_8; shift: cint=0)
   {.importcpp: "cv::line(#, #, #, #, #, #, #)".}
 
