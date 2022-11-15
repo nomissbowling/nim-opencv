@@ -3,36 +3,10 @@
 #
 # see also dynlibimporter.nim
 
-# import dynlibimporter
-include dynlibimporter
-
 import macros
-import os, strformat
+import os, strformat, strutils
 
-macro libautolinker*(incs, libs: static[seq[string]]): untyped =
-  result = newStmtList()
-  when true:
-    for inc in incs:
-      result.add(nnkPragma.newTree(
-        newColonExpr("passC".ident, inc.newStrLitNode)))
-    for lib in libs:
-      result.add(nnkPragma.newTree(
-        newColonExpr("passL".ident, lib.newStrLitNode)))
-  else:
-    for inc in incs:
-      result.add quote do:
-        {.passC: `inc`.}
-    for lib in libs:
-      result.add quote do:
-        {.passL: `lib`.}
-
-const
-  worlds = @["world"]
-  keys = @["core", "highgui", "imgproc", "imgcodecs", "video", "videoio",
-    "photo", "gapi", "calib", "features", "ml", "dnn", "flann",
-    "objdetect", "stitching"]
-
-# TODO: get environment
+# TODO: get environment (provisional)
 # expect OpenCV_DIR=<path_to_build_or_install_directory>
 # /opt/opencv4/include
 # /usr/local/include/opencv4
@@ -58,22 +32,63 @@ elif defined(opencv5):
 elif defined(opencv6):
   const base_root = "opencv6"
 else:
-  const base_root = "."
+  const opencv_dir_key = "OpenCV_DIR"
+  # if opencv_dir_key.existsEnv: pass
+  const base_root = opencv_dir_key.getEnv(".") # TODO: provisional
 
-template selPath(b, p: string): string =
-  if b == ".": b else: p
+### These 3 lines must be at after defines to use defined base_root above. ###
+# import dynlibimporter
+include dynlibimporter
+
+macro libautolinker*(incs, libs: static[seq[string]]): untyped =
+  result = newStmtList()
+  when true:
+    for inc in incs:
+      result.add(nnkPragma.newTree(
+        newColonExpr("passC".ident, inc.newStrLitNode)))
+    for lib in libs:
+      result.add(nnkPragma.newTree(
+        newColonExpr("passL".ident, lib.newStrLitNode)))
+  else:
+    for inc in incs:
+      result.add quote do:
+        {.passC: `inc`.}
+    for lib in libs:
+      result.add quote do:
+        {.passL: `lib`.}
+
+const
+  worlds = @["world"]
+  keys = @["core", "highgui", "imgproc", "imgcodecs", "video", "videoio",
+    "photo", "gapi", "calib", "features", "ml", "dnn", "flann",
+    "objdetect", "stitching"]
+
+proc selPath(b, pi, pl: string): tuple[pi: string, pl: string] =
+  let solve: tuple[r: bool, pi: string, pl: string] =
+    if b.len == 0: (true, ".", ".")
+    elif b == ".": (true, b, b)
+    elif b[0] == '/': (true, b, b)
+    elif b.len >= 2 and b[1] == ':' and b[0].isAlphaAscii: (true, b, b)
+    else: (false, b, b)
+
+  when defined(windows):
+    if solve.r: (fmt"{solve.pi}/{pi}", fmt"{solve.pl}/{pl}")
+    else: (fmt"C:/{solve.pi}/{pi}", fmt"C:/{solve.pl}/{pl}") # TODO: provisional
+  elif defined(macosx):
+    if solve.r: (fmt"{solve.pi}/{pi}", fmt"{solve.pl}/{pl}")
+    else: (fmt"/usr/local/{pi}/{solve.pi}", fmt"/usr/local/{pl}/{solve.pl}")
+  else:
+    if solve.r: (fmt"{solve.pi}/{pi}", fmt"{solve.pl}/{pl}")
+    else: (fmt"/usr/local/{pi}/{solve.pi}", fmt"/usr/local/{pl}/{solve.pl}")
 
 when defined(windows):
-  const inc_root = base_root.selPath(fmt"C:/{base_root}/include")
-  const lib_root = base_root.selPath(fmt"C:/{base_root}/x64/mingw/lib")
+  const (inc_root, lib_root) = base_root.selPath("include", "x64/mingw/lib")
   const dll_ext = "dll"
 elif defined(macosx):
-  const inc_root = base_root.selPath(fmt"/usr/local/include/{base_root}")
-  const lib_root = base_root.selPath(fmt"/usr/local/lib/{base_root}")
+  const (inc_root, lib_root) = base_root.selPath("include", "lib")
   const dll_ext = "dylib"
 else:
-  const inc_root = base_root.selPath(fmt"/usr/local/include/{base_root}")
-  const lib_root = base_root.selPath(fmt"/usr/local/lib/{base_root}")
+  const (inc_root, lib_root) = base_root.selPath("include", "lib")
   const dll_ext = "so"
 
 proc searchLib(libs: var seq[string], key: string, paths: seq[string]) =

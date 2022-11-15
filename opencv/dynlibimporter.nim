@@ -30,8 +30,17 @@ proc getDllName(key: string; ext: string; path: string=".";
     let vmajor = 5
   elif defined(opencv6):
     let vmajor = 6
-  else:
-    let vmajor = 0 # default value if not set anything (nothing may be matched)
+  else: # set the first found number of base_root (otherwise not found lib)
+    var
+      s: seq[char] = @[]
+      f: bool = false
+    for c in base_root:
+      if not f:
+        if c.isDigit: s.add(c); f = true
+      else:
+        if c.isDigit: s.add(c)
+        else: break
+    let vmajor = if f: parseInt(s.join) else: 0 # TODO: provisional
   for vminor in countdown(9, 0):
     for vsub in countdown(20, 0):
       vers.add(fmt"{vmajor}{vminor}{vsub}")

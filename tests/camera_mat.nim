@@ -62,11 +62,11 @@ when usestdnim == "true":
       decTxt = newScalar(0, 255, 255)
       result = detector.detectAndDecodeMulti(gry, infs, pts, straight)
     if not result: return
-    # echo fmt"detected QRs: {infs.size}"
+    # echo fmt"detected QRs: {infs.len}"
     for i, di in infs:
       # echo fmt"[{i}] [{$di}]" # pts: N * 4p straight: N * Mat gray (0 or 255)
       var vp = newStdVector[Point[float32]]() # initialize or clear in the loop
-      if (i + 1) * 4 <= pts.size.int: # N * 4
+      if (i + 1) * 4 <= pts.len: # N * 4
         for j in 0..<4: vp.pushBack(pts[(i * 4 + j)])
       let
         ds = $di
@@ -75,7 +75,7 @@ when usestdnim == "true":
         colOut = if bad: decNoneOut else: decOKOut
         rr = vp.minAreaRect
         br = rr.boundingRect
-      for j in 0..<vp.size.int: gry.line(vp[j], vp[(j + 1) mod 4], col, 2)
+      for j in 0..<vp.len: gry.line(vp[j], vp[(j + 1) mod 4], col, 2)
       gry.rectangle(br, colOut, 2)
       if not bad:
         gry.putText(ds, vp[3],
